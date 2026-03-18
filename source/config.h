@@ -7,21 +7,21 @@
 #include "neuwm.h"
 #include "nein_cursor.h"
 
-static const struct config cfg	= {
-	.motion_throttle_hz			= 85,
-	.border_col_active			= 0xffc678dd,
-	.border_col_normal			= 0xff444444,
-	.border_width				= 1,
-	.outer_border_col_active	= 0xff222222,
-	.outer_border_col_normal	= 0xff222222,
-	.outer_border_width			= 4,
-	.master_width				= 60,
-	.gaps						= 10,
-	.float_x					= 100,
-	.float_y					= 100,
-	.float_w					= 800,
-	.float_h					= 500,
-	.zoom_level					= 0.5f,
+static const struct config cfg = {
+	.motion_throttle_hz        = 85,
+	.border_col_active         = 0xffc678dd,
+	.border_col_normal         = 0xff444444,
+	.border_width              = 1,
+	.outer_border_col_active   = 0xff222222,
+	.outer_border_col_normal   = 0xff222222,
+	.outer_border_width        = 4,
+	.master_width              = 60,
+	.gaps                      = 10,
+	.float_x                   = 100,
+	.float_y                   = 100,
+	.float_w                   = 800,
+	.float_h                   = 500,
+	.zoom_level                = 0.5f,
 };
 
 static const char* termcmd[] = { "st-wl", NULL };
