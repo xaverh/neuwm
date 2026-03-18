@@ -65,7 +65,7 @@ struct config {
 	int32_t         float_y;
 	uint32_t        float_w;
 	uint32_t        float_h;
-    float           zoom_level;
+	float           zoom_level;
 };
 
 struct grab {
