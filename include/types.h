@@ -48,6 +48,7 @@ struct client {
 	uint32_t        w;
 	uint32_t        h;
 	uint32_t        ws;
+	int32_t         height_bias;
 };
 
 struct config {

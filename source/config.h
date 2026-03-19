@@ -27,6 +27,7 @@ static const struct config cfg = {
 static const char* termcmd[] = { "st-wl", NULL };
 static const char* menucmd[] = { "neumenu_run", "-fn", "tadepe", "-nb", "#000000", "-sb", "#c678dd", NULL };
 static struct bind binds[] = {
+
 	/* keyboard */
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Return, { .v = termcmd }, spawn },
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_space,  { .v = menucmd }, spawn },
@@ -39,6 +40,8 @@ static struct bind binds[] = {
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_f,      { .v = NULL },    fullscreen },
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_l,      { .i = 50 },      master_resize },
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_h,      { .i = -50 },     master_resize },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_k,      { .i =  50 },     stack_resize },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_j,      { .i = -50 },     stack_resize },
 	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_k,      { .v = NULL },    master_next },
 	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_j,      { .v = NULL },    master_prev },
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_d,      { .v = NULL },    draw_mode_toggle },

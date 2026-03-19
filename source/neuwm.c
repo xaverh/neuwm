@@ -302,6 +302,7 @@ static void tile(struct screen* s)
 	}
 
 	size_t i = 0;
+	int32_t stack_y = y;
 	wl_list_for_each(c, &wm.tiled, tiled_link) {
 		if (!is_tiled(c, s))
 			continue;
@@ -317,13 +318,21 @@ static void tile(struct screen* s)
 		} else {
 			uint32_t stackn = (uint32_t)(n - 1);
 			uint32_t idx    = (uint32_t)(i - 1);
+			uint32_t base_h = (h - (uint32_t)in_gaps * (stackn - 1)) / stackn;
+			int32_t win_h;
 
-			uint32_t stack_height = (h - (uint32_t)in_gaps * (stackn - 1)) / stackn;
+			if (idx == stackn - 1) {
+				win_h = (int32_t)(y + (int32_t)h - stack_y);
+			} else {
+				win_h = (int32_t)base_h + c->height_bias;
+			}
+			if (win_h < 20) win_h = 20;
 
-			geom.x = x + (int32_t)master_width + in_gaps;
-			geom.y = y + (int32_t)(idx * (stack_height + (uint32_t)in_gaps));
+			geom.x      = x + (int32_t)master_width + in_gaps;
+			geom.y      = stack_y;
 			geom.width  = w - master_width - (uint32_t)in_gaps;
-			geom.height = stack_height;
+			geom.height = (uint32_t)win_h;
+			stack_y    += win_h + in_gaps;
 		}
 
 		swc_window_set_geometry(c->win, &geom);
@@ -652,6 +661,27 @@ void master_resize(void* data, uint32_t time, uint32_t value, uint32_t state)
 		master_width = (uint32_t)mw;
 	}
 
+	tile(wm.sel_screen);
+}
+
+void stack_resize(void* data, uint32_t time, uint32_t value, uint32_t state)
+{
+	(void)time;
+	(void)value;
+
+	union arg* a = data;
+
+	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+		return;
+
+	if (!wm.sel_screen || !wm.sel_client || wm.sel_client->floating)
+		return;
+
+	struct client* first = first_tiled(wm.sel_screen);
+	if (!first || wm.sel_client == first)
+		return;
+
+	wm.sel_client->height_bias += a->i;
 	tile(wm.sel_screen);
 }
 
@@ -1023,7 +1053,11 @@ void new_window(struct swc_window* win)
 	c->floating		= wm.global_floating;
 	c->fullscreen	= false;
 	c->ws			= wm.ws;
-	c->x = 0; c->y = 0; c->w = 0; c->h = 0;
+	c->x			= 0;
+	c->y			= 0;
+	c->w			= 0;
+	c->h			= 0;
+	c->height_bias	= 0;
 
 	if (c->floating) {
 		wl_list_insert(&wm.floating, &c->float_link);
