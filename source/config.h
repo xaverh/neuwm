@@ -26,11 +26,13 @@ static const struct config cfg = {
 
 static const char* termcmd[] = { "st-wl", NULL };
 static const char* menucmd[] = { "neumenu_run", "-fn", "tadepe", "-nb", "#000000", "-sb", "#c678dd", NULL };
+static const char* btoggle[] = { "pkill", "-USR1", "mojito", NULL };
 static struct bind binds[] = {
 
 	/* keyboard */
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Return, { .v = termcmd }, spawn },
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_space,  { .v = menucmd }, spawn },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_b,      { .v = btoggle }, spawn },
 	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_e,      { .v = NULL },    quit },
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Tab,    { .v = NULL },    focus_next },
 	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Tab,    { .v = NULL },    focus_prev },
