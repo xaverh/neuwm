@@ -15,6 +15,7 @@ Based on [wsxwm](https://git.sr.ht/~uint/wsxwm) and borrowed from [hevel](https:
 - Draw-to-spawn terminals — press `mod+d`, drag to define window size (inspired by [hevel](https://git.sr.ht/~dlm/hevel))
   
 ## Added in neuwm
+- Resize height of stacked windows `mod+j/k`
 - Cascading floating window placement with screen boundary awareness
 - Global float toggle now arranges all windows in a cascade
 - Keyboard move and resize for floating windows
@@ -74,6 +75,7 @@ Edit `source/config.h` and recompile.
 | `mod+shift+tab` | Focus prev |
 | `mod+shift+j/k` | Rotate master |
 | `mod+h/l` | Resize master |
+| `mod+j/k` | Resize stack |
 | `mod+t` | Toggle float (current window) |
 | `mod+shift+t` | Toggle global float |
 | `mod+f` | Fullscreen |
