@@ -24,13 +24,27 @@ static const struct config cfg = {
 	.zoom_level                = 0.5f,
 };
 
+#define BAR_FONT     "Tadepe:style=Bold:pixelsize=16:antialias=false"
+#define BAR_GEOM     "1900x20+10"
+#define BAR_CONFIG   "$HOME/.config/mojito/status.sh"
+#define WALLPAPER    "$HOME/.git/wallpapers/000-New/dalem.png"
+#define WALL_MODE    "scaled"
+
 #define AUTOSTART \
-	"sh $HOME/.config/mojito/status.sh | mojito -f \"Tadepe:style=Bold:pixelsize=16:antialias=false\" -g 1900x20+10 &", \
-	"swall -m scaled $HOME/.git/wallpapers/000-New/dalem.png &"
+	"sh " BAR_CONFIG " | mojito " \
+	" -f \"" BAR_FONT "\" -g " BAR_GEOM " &", \
+	"swall -m " WALL_MODE " " WALLPAPER " &"
 
 static const char* termcmd[] = { "st-wl", NULL };
-static const char* menucmd[] = { "neumenu_run", "-fn", "tadepe", "-nb", "#000000", "-sb", "#c678dd", NULL };
 static const char* btoggle[] = { "pkill", "-USR1", "mojito", NULL };
+static const char *menucmd[]  = { "neumenu_run",
+	"-fn", "tadepe",
+	"-nb", "#000000",
+	"-sb", "#c678dd",
+	"-sf", "#000000",
+	NULL 
+};
+
 static struct bind binds[] = {
 
 	/* keyboard */
