@@ -24,6 +24,10 @@ static const struct config cfg = {
 	.zoom_level                = 0.5f,
 };
 
+#define AUTOSTART \
+	"sh $HOME/.config/mojito/status.sh | mojito -f \"Tadepe:style=Bold:pixelsize=16:antialias=false\" -g 1900x20+10 &", \
+	"swall -m scaled $HOME/.git/wallpapers/000-New/dalem.png &"
+
 static const char* termcmd[] = { "st-wl", NULL };
 static const char* menucmd[] = { "neumenu_run", "-fn", "tadepe", "-nb", "#000000", "-sb", "#c678dd", NULL };
 static const char* btoggle[] = { "pkill", "-USR1", "mojito", NULL };

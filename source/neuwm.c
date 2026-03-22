@@ -2,17 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 #include <swc.h>
 #include <wayland-server.h>
 #include <wayland-util.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
-
 #include "config.h"
 #include "types.h"
 #include "util.h"
 #include "neuwm.h"
+#include <sys/wait.h>
 
+static void autostart(void);
 static void focus(struct client* c, bool raise);
 static void on_screen_destroy(void* data);
 static void on_screen_usable_geometry_changed(void* data);
@@ -206,6 +206,8 @@ static void setup(void)
 	signal(SIGINT,  sig_handler);
 	signal(SIGTERM, sig_handler);
 	signal(SIGQUIT, sig_handler);
+
+    autostart();
 }
 
 static void setup_binds(void)
@@ -216,6 +218,24 @@ static void setup_binds(void)
 	}
 	swc_add_axis_binding(MOD4, 0, zoom_axis, NULL);
 	swc_add_binding(SWC_BINDING_BUTTON, SWC_MOD_ANY, BTN_LEFT, mouse_click, NULL);
+}
+
+static void autostart(void)
+{
+	const char* progs[] = { AUTOSTART };
+	for (size_t i = 0; i < sizeof(progs) / sizeof(progs[0]); i++) {
+		pid_t pid = fork();
+		if (pid == 0) {
+			setsid();
+			if (fork() == 0) {
+				execl("/bin/sh", "sh", "-c", progs[i], NULL);
+				_exit(1);
+			}
+			_exit(0);
+		} else if (pid > 0) {
+			waitpid(pid, NULL, 0);
+		}
+	}
 }
 
 static void set_floating(struct client* c, bool floating, bool raise)
