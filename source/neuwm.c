@@ -23,9 +23,11 @@ static void setup_binds(void);
 static void setup_cursor(void);
 static void set_floating(struct client* c, bool floating, bool raise);
 static void tile(struct screen* s);
+
 static int zoom_tick(void* data);
 static int pan_drag_tick(void* data);
 static int sel_tick(void* data);
+static int next_cascade_slot(void);
 
 static uint32_t master_width = 0;
 
@@ -125,11 +127,6 @@ static void on_win_destroy(void* data)
 
 	tile(c->scr);
 	free(c);
-
-	if (wl_list_empty(&wm.floating)) {
-		wm.cascade_x = 0;
-		wm.cascade_y = 0;
-	}
 }
 
 static void on_win_entered(void* data)
@@ -174,8 +171,6 @@ static void setup(void)
 	wm.grab.c           = NULL;
 	wm.global_floating  = false;
 	wm.ws               = 1;
-	wm.cascade_x        = 0;
-	wm.cascade_y        = 0;
 	wm.zoom_target      = 1.0f;
 	wm.zoom_timer       = NULL;
 	wm.pan_active       = false;
@@ -250,10 +245,18 @@ static void set_floating(struct client* c, bool floating, bool raise)
 			wl_list_insert(&wm.floating, &c->float_link);
 
 			struct swc_rectangle geom;
-			geom.x      = cfg.float_x;
-			geom.y      = cfg.float_y;
-			geom.width  = cfg.float_w;
-			geom.height = cfg.float_h;
+			if (c->saved_float_w > 0) {
+				geom.x      = c->saved_float_x;
+				geom.y      = c->saved_float_y;
+				geom.width  = c->saved_float_w;
+				geom.height = c->saved_float_h;
+			} else {
+				int slot = next_cascade_slot();
+				geom.x      = cfg.float_x + slot * 100;
+				geom.y      = cfg.float_y + slot * 100;
+				geom.width  = cfg.float_w;
+				geom.height = cfg.float_h;
+			}
 			swc_window_set_geometry(c->win, &geom);
 		} else if (raise) {
 			wl_list_remove(&c->float_link);
@@ -263,6 +266,13 @@ static void set_floating(struct client* c, bool floating, bool raise)
 		swc_window_set_stacked(c->win);
 	} else {
 		if (c->floating) {
+			struct swc_rectangle geom;
+			swc_window_get_geometry(c->win, &geom);
+			c->saved_float_x = geom.x;
+			c->saved_float_y = geom.y;
+			c->saved_float_w = geom.width;
+			c->saved_float_h = geom.height;
+
 			c->floating = false;
 			wl_list_remove(&c->float_link);
 			wl_list_insert(&wm.tiled, &c->tiled_link);
@@ -1053,6 +1063,27 @@ void new_screen(struct swc_screen* scr)
 	_log(stderr, "new_screen=%p\n", (void*)scr);
 }
 
+static int next_cascade_slot(void)
+{
+	struct client* c;
+	for (int n = 0; n < 50; n++) {
+		int32_t sx = cfg.float_x + n * 100;
+		int32_t sy = cfg.float_y + n * 100;
+		bool occupied = false;
+		wl_list_for_each(c, &wm.floating, float_link) {
+			struct swc_rectangle geom;
+			swc_window_get_geometry(c->win, &geom);
+			if (abs(geom.x - sx) < 30 && abs(geom.y - sy) < 30) {
+				occupied = true;
+				break;
+			}
+		}
+		if (!occupied)
+			return n;
+	}
+	return 0;
+}
+
 void new_window(struct swc_window* win)
 {
 	struct client* c;
@@ -1062,22 +1093,26 @@ void new_window(struct swc_window* win)
 		die(EXIT_FAILURE, "malloc client failed");
 
 	win->motion_throttle_ms = 1000 / cfg.motion_throttle_hz;
-	win->min_width	= 20;
-	win->min_height	= 20;
-	win->max_width	= 0;
-	win->max_height	= 0;
+	win->min_width		= 20;
+	win->min_height		= 20;
+	win->max_width		= 0;
+	win->max_height		= 0;
 
 	c->win			= win;
 	c->scr			= wm.sel_screen;
 	c->mapped		= false;
 	c->floating		= wm.global_floating;
-	c->fullscreen	= false;
+	c->fullscreen		= false;
 	c->ws			= wm.ws;
 	c->x			= 0;
 	c->y			= 0;
 	c->w			= 0;
 	c->h			= 0;
-	c->height_bias	= 0;
+	c->height_bias		= 0;
+	c->saved_float_x	= 0;
+	c->saved_float_y	= 0;
+	c->saved_float_w	= 0;
+	c->saved_float_h	= 0;
 
 	if (c->floating) {
 		wl_list_insert(&wm.floating, &c->float_link);
@@ -1089,23 +1124,11 @@ void new_window(struct swc_window* win)
 			geom = wm.spawn_geometry;
 			wm.spawn_pending = false;
 		} else {
-			if (wm.sel_screen) {
-				struct swc_rectangle* scr = &wm.sel_screen->scr->usable_geometry;
-				if (cfg.float_y + wm.cascade_y + (int32_t)cfg.float_h > scr->y + (int32_t)scr->height) {
-					wm.cascade_y = 0;
-					wm.cascade_x += 100;
-				}
-				if (cfg.float_x + wm.cascade_x + (int32_t)cfg.float_w > scr->x + (int32_t)scr->width) {
-					wm.cascade_x = 0;
-					wm.cascade_y = 0;
-				}
-			}
-			geom.x		= cfg.float_x + wm.cascade_x;
-			geom.y		= cfg.float_y + wm.cascade_y;
-			geom.width	= cfg.float_w;
-			geom.height	= cfg.float_h;
-			wm.cascade_x += 100;
-			wm.cascade_y += 100;
+			int slot = next_cascade_slot();
+			geom.x      = cfg.float_x + slot * 100;
+			geom.y      = cfg.float_y + slot * 100;
+			geom.width  = cfg.float_w;
+			geom.height = cfg.float_h;
 		}
 		swc_window_set_geometry(win, &geom);
 	} else {
@@ -1191,36 +1214,13 @@ void toggle_float_global(void* data, uint32_t time, uint32_t value, uint32_t sta
 	struct client* tmp;
 
 	if (wm.global_floating) {
-		wm.cascade_x = 0;
-		wm.cascade_y = 0;
 		wl_list_for_each_safe(c, tmp, &wm.tiled, tiled_link) {
 			set_floating(c, true, false);
-			if (wm.sel_screen) {
-				struct swc_rectangle* scr = &wm.sel_screen->scr->usable_geometry;
-				if (cfg.float_y + wm.cascade_y + (int32_t)cfg.float_h > scr->y + (int32_t)scr->height) {
-					wm.cascade_y = 0;
-					wm.cascade_x += 100;
-				}
-				if (cfg.float_x + wm.cascade_x + (int32_t)cfg.float_w > scr->x + (int32_t)scr->width) {
-					wm.cascade_x = 0;
-					wm.cascade_y = 0;
-				}
-			}
-			struct swc_rectangle geom;
-			geom.x		= cfg.float_x + wm.cascade_x;
-			geom.y		= cfg.float_y + wm.cascade_y;
-			geom.width	= cfg.float_w;
-			geom.height	= cfg.float_h;
-			swc_window_set_geometry(c->win, &geom);
-			wm.cascade_x += 100;
-			wm.cascade_y += 100;
 		}
 	} else {
 		wl_list_for_each_safe(c, tmp, &wm.floating, float_link) {
 			set_floating(c, false, false);
 		}
-		wm.cascade_x = 0;
-		wm.cascade_y = 0;
 	}
 
 	tile(wm.sel_screen);

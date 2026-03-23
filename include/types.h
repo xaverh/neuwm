@@ -49,6 +49,10 @@ struct client {
 	uint32_t        h;
 	uint32_t        ws;
 	int32_t         height_bias;
+	int32_t         saved_float_x;
+	int32_t         saved_float_y;
+	uint32_t        saved_float_w;
+	uint32_t        saved_float_h;
 };
 
 struct config {
@@ -108,8 +112,6 @@ struct wm {
 	int32_t         sel_start_y;
 	bool            global_floating;
 	uint8_t         ws;
-	int32_t         cascade_x;
-	int32_t         cascade_y;
 };
 
 #endif /* TYPES_H */
