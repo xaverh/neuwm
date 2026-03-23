@@ -17,7 +17,7 @@ Based on [wsxwm](https://git.sr.ht/~uint/wsxwm) and borrowed from [hevel](https:
 ## Added in neuwm
 - Resize height of stacked windows `mod+j/k`
 - Cascading floating window placement with screen boundary awareness
-- Global float toggle now arranges all windows in a cascade
+- Global float toggle now remembers all window placement and geometry
 - Keyboard move and resize for floating windows
 - Click to focus and reset zoom; hover focus suppressed while zoomed
 - Pan canvas by dragging empty desktop with `mod+left-click`
