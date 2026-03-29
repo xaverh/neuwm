@@ -1120,18 +1120,16 @@ void new_window(struct swc_window* win)
 		wl_list_init(&c->tiled_link);
 		swc_window_set_handler(win, &window_handler, c);
 		swc_window_set_stacked(win);
-		struct swc_rectangle geom;
 		if (wm.spawn_pending) {
-			geom = wm.spawn_geometry;
+			struct swc_rectangle geom = wm.spawn_geometry;
 			wm.spawn_pending = false;
+			swc_window_set_geometry(win, &geom);
 		} else {
 			int slot = next_cascade_slot();
-			geom.x      = cfg.float_x + slot * 100;
-			geom.y      = cfg.float_y + slot * 100;
-			geom.width  = cfg.float_w;
-			geom.height = cfg.float_h;
+			swc_window_set_position(win,
+				cfg.float_x + slot * 100,
+				cfg.float_y + slot * 100);
 		}
-		swc_window_set_geometry(win, &geom);
 	} else {
 		wl_list_insert(&wm.tiled, &c->tiled_link);
 		wl_list_init(&c->float_link);
