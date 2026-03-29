@@ -11,6 +11,7 @@
 #include "util.h"
 #include "neuwm.h"
 #include <sys/wait.h>
+#include <libinput.h>
 
 static void autostart(void);
 static void focus(struct client* c, bool raise);
@@ -1147,7 +1148,27 @@ void new_window(struct swc_window* win)
 
 void new_device(struct libinput_device* dev)
 {
-	(void)dev;
+	if (!libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_POINTER))
+		return;
+
+	/* tapping */
+	if (libinput_device_config_tap_get_finger_count(dev) > 0) {
+		libinput_device_config_tap_set_enabled(dev, LIBINPUT_CONFIG_TAP_ENABLED);
+		libinput_device_config_tap_set_button_map(dev, LIBINPUT_CONFIG_TAP_MAP_LRM);
+	}
+
+	/* natural scrolling */
+	if (libinput_device_config_scroll_has_natural_scroll(dev))
+		libinput_device_config_scroll_set_natural_scroll_enabled(dev, 1);
+
+	/* clickfinger */
+	uint32_t methods = libinput_device_config_click_get_methods(dev);
+	if (methods & LIBINPUT_CONFIG_CLICK_METHOD_CLICKFINGER)
+		libinput_device_config_click_set_method(dev, LIBINPUT_CONFIG_CLICK_METHOD_CLICKFINGER);
+
+	/* disable while typing */
+	if (libinput_device_config_dwt_is_available(dev))
+		libinput_device_config_dwt_set_enabled(dev, LIBINPUT_CONFIG_DWT_ENABLED);
 }
 
 void quit(void* data, uint32_t time, uint32_t value, uint32_t state)
