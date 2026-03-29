@@ -19,7 +19,7 @@ static const struct config cfg = {
 	.gaps                      = 10,
 	.float_x                   = 100,
 	.float_y                   = 100,
-	.float_w                   = 800,
+	.float_w                   = 802,
 	.float_h                   = 500,
 	.zoom_level                = 0.5f,
 };
