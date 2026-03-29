@@ -27,7 +27,7 @@ static const struct config cfg = {
 #define BAR_FONT     "Tadepe:style=Bold:pixelsize=16:antialias=false"
 #define BAR_GEOM     "1900x20+10"
 #define BAR_CONFIG   "$HOME/.config/mojito/status.sh"
-#define WALLPAPER    "$HOME/.git/wallpapers/rgb.png"
+#define WALLPAPER    "$HOME/Pictures/wallpapers/rgb.png"
 #define WALL_MODE    "scaled"
 
 #define AUTOSTART \
