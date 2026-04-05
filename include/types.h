@@ -104,6 +104,13 @@ struct wm {
 	int32_t         pan_last_x;
 	int32_t         pan_last_y;
 	struct          wl_event_source* sel_timer;
+	struct          wl_event_source* repeat_timer;
+	void            (*repeat_fn)(void*, uint32_t, uint32_t, uint32_t);
+	int32_t         repeat_arg_i;
+	int             repeat_interval;
+	struct          swc_rectangle repeat_geom;
+	int32_t         repeat_anchor_x;
+	int32_t         repeat_anchor_y;
 	struct          swc_rectangle spawn_geometry;
 	bool            spawn_pending;
 	bool            selecting;

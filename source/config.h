@@ -58,35 +58,35 @@ static struct bind binds[] = {
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_t,      { .v = NULL },    toggle_float },
 	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_t,      { .v = NULL },    toggle_float_global },
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_f,      { .v = NULL },    fullscreen },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_l,      { .i = 50 },      master_resize },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_h,      { .i = -50 },     master_resize },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_k,      { .i =  50 },     stack_resize },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_j,      { .i = -50 },     stack_resize },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_l,      { .i = 10 },      master_resize },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_h,      { .i = -10 },     master_resize },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_k,      { .i =  10 },     stack_resize },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_j,      { .i = -10 },     stack_resize },
 	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_k,      { .v = NULL },    master_next },
 	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_j,      { .v = NULL },    master_prev },
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_d,      { .v = NULL },    draw_mode_toggle },
 
 	/* floating move */
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Left,   { .i = -100 },    float_move_x },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Right,  { .i =  100 },    float_move_x },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Up,     { .i = -100 },    float_move_y },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Down,   { .i =  100 },    float_move_y },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Left,   { .i = -6 },      float_move_x },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Right,  { .i =  6 },      float_move_x },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Up,     { .i = -6 },      float_move_y },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Down,   { .i =  6 },      float_move_y },
 
 	/* floating resize - left/top anchored (expands leftward/upward) */
-	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Left,   { .i =  50 },     float_resize_w },
-	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Right,  { .i = -50 },     float_resize_w },
-	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Up,     { .i =  50 },     float_resize_h },
-	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Down,   { .i = -50 },     float_resize_h },
+	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Left,   { .i =  6 },      float_resize_w },
+	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Right,  { .i = -6 },      float_resize_w },
+	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Up,     { .i =  6 },      float_resize_h },
+	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Down,   { .i = -6 },      float_resize_h },
 
 	/* floating resize - right/bottom anchored (expands rightward/downward) */
-	{ SWC_BINDING_KEY,    MOD4|CTRL,  XKB_KEY_Left,   { .i = -50 },     float_resize_w_right },
-	{ SWC_BINDING_KEY,    MOD4|CTRL,  XKB_KEY_Right,  { .i =  50 },     float_resize_w_right },
-	{ SWC_BINDING_KEY,    MOD4|CTRL,  XKB_KEY_Up,     { .i = -50 },     float_resize_h_bottom },
-	{ SWC_BINDING_KEY,    MOD4|CTRL,  XKB_KEY_Down,   { .i =  50 },     float_resize_h_bottom },
+	{ SWC_BINDING_KEY,    MOD4|CTRL,  XKB_KEY_Left,   { .i = -6 },      float_resize_w_right },
+	{ SWC_BINDING_KEY,    MOD4|CTRL,  XKB_KEY_Right,  { .i =  6 },      float_resize_w_right },
+	{ SWC_BINDING_KEY,    MOD4|CTRL,  XKB_KEY_Up,     { .i = -6 },      float_resize_h_bottom },
+	{ SWC_BINDING_KEY,    MOD4|CTRL,  XKB_KEY_Down,   { .i =  6 },      float_resize_h_bottom },
 
 	/* floating scale - centered */
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_equal,  { .i =  50 },     float_scale },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_minus,  { .i = -50 },     float_scale },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_equal,  { .i =  6 },      float_scale },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_minus,  { .i = -6 },      float_scale },
 
 	/* mouse */
 	{ SWC_BINDING_BUTTON, MOD4,       BTN_LEFT,       { .v = NULL },    mouse_move },

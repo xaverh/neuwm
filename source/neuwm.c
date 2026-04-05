@@ -184,6 +184,9 @@ static void setup(void)
 	wm.sel_start_x      = 0;
 	wm.sel_start_y      = 0;
 	wm.sel_timer        = NULL;
+	wm.repeat_timer     = NULL;
+	wm.repeat_fn        = NULL;
+	wm.repeat_arg_i     = 0;
 
 	wm.ev_loop = wl_display_get_event_loop(wm.dpy);
 	if (!swc_initialize(wm.dpy, wm.ev_loop, &manager))
@@ -371,7 +374,10 @@ static void tile(struct screen* s)
 	}
 }
 
-static const int zoom_timerms = 16;
+static const int zoom_timerms   = 16;
+static const int repeat_delay_ms     = 200;
+static const int repeat_rate_ms      = 16;  /* floating ops: ~60fps */
+static const int repeat_tile_rate_ms = 50;  /* tiling ops: ~20fps, gives clients time to respond */
 
 static int zoom_tick(void* data)
 {
@@ -464,6 +470,46 @@ static int sel_tick(void* data)
 		0xffff69b4, 2);
 	wl_event_source_timer_update(wm.sel_timer, 16);
 	return 0;
+}
+
+static int repeat_tick(void* data)
+{
+	(void)data;
+	if (!wm.repeat_fn) {
+		if (wm.repeat_timer) {
+			wl_event_source_remove(wm.repeat_timer);
+			wm.repeat_timer = NULL;
+		}
+		return 0;
+	}
+	union arg a = { .i = wm.repeat_arg_i };
+	wm.repeat_fn(&a, 0, 0, WL_KEYBOARD_KEY_STATE_PRESSED);
+	wl_event_source_timer_update(wm.repeat_timer, wm.repeat_interval);
+	return 0;
+}
+
+static void repeat_start(void (*fn)(void*, uint32_t, uint32_t, uint32_t), int32_t arg_i, int interval_ms)
+{
+	if (wm.repeat_fn == fn && wm.repeat_arg_i == arg_i)
+		return;
+	wm.repeat_fn       = fn;
+	wm.repeat_arg_i    = arg_i;
+	wm.repeat_interval = interval_ms;
+	if (!wm.repeat_timer)
+		wm.repeat_timer = wl_event_loop_add_timer(wm.ev_loop, repeat_tick, NULL);
+	if (wm.repeat_timer)
+		wl_event_source_timer_update(wm.repeat_timer, repeat_delay_ms);
+}
+
+static void repeat_stop(void (*fn)(void*, uint32_t, uint32_t, uint32_t), int32_t arg_i)
+{
+	if (wm.repeat_fn != fn || wm.repeat_arg_i != arg_i)
+		return;
+	wm.repeat_fn = NULL;
+	if (wm.repeat_timer) {
+		wl_event_source_remove(wm.repeat_timer);
+		wm.repeat_timer = NULL;
+	}
 }
 
 void focus_next(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -662,8 +708,10 @@ void master_resize(void* data, uint32_t time, uint32_t value, uint32_t state)
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(master_resize, a->i);
 		return;
+	}
 
 	if (!wm.sel_screen)
 		return;
@@ -693,6 +741,7 @@ void master_resize(void* data, uint32_t time, uint32_t value, uint32_t state)
 	}
 
 	tile(wm.sel_screen);
+	repeat_start(master_resize, a->i, repeat_tile_rate_ms);
 }
 
 void stack_resize(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -702,8 +751,10 @@ void stack_resize(void* data, uint32_t time, uint32_t value, uint32_t state)
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(stack_resize, a->i);
 		return;
+	}
 
 	if (!wm.sel_screen || !wm.sel_client || wm.sel_client->floating)
 		return;
@@ -714,6 +765,7 @@ void stack_resize(void* data, uint32_t time, uint32_t value, uint32_t state)
 
 	wm.sel_client->height_bias += a->i;
 	tile(wm.sel_screen);
+	repeat_start(stack_resize, a->i, repeat_tile_rate_ms);
 }
 
 void draw_mode_toggle(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -909,8 +961,10 @@ void float_move_x(void* data, uint32_t time, uint32_t value, uint32_t state)
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(float_move_x, a->i);
 		return;
+	}
 
 	if (!wm.sel_client || !wm.sel_client->floating)
 		return;
@@ -919,6 +973,7 @@ void float_move_x(void* data, uint32_t time, uint32_t value, uint32_t state)
 	swc_window_get_geometry(wm.sel_client->win, &geom);
 	geom.x += a->i;
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	repeat_start(float_move_x, a->i, repeat_rate_ms);
 }
 
 void float_move_y(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -928,8 +983,10 @@ void float_move_y(void* data, uint32_t time, uint32_t value, uint32_t state)
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(float_move_y, a->i);
 		return;
+	}
 
 	if (!wm.sel_client || !wm.sel_client->floating)
 		return;
@@ -938,6 +995,7 @@ void float_move_y(void* data, uint32_t time, uint32_t value, uint32_t state)
 	swc_window_get_geometry(wm.sel_client->win, &geom);
 	geom.y += a->i;
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	repeat_start(float_move_y, a->i, repeat_rate_ms);
 }
 
 void float_resize_w(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -947,17 +1005,27 @@ void float_resize_w(void* data, uint32_t time, uint32_t value, uint32_t state)
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(float_resize_w, a->i);
 		return;
+	}
 
 	if (!wm.sel_client || !wm.sel_client->floating)
 		return;
 
 	struct swc_rectangle geom;
-	swc_window_get_geometry(wm.sel_client->win, &geom);
+	if (wm.repeat_fn == float_resize_w && wm.repeat_arg_i == a->i) {
+		geom = wm.repeat_geom;
+	} else {
+		swc_window_get_geometry(wm.sel_client->win, &geom);
+		wm.repeat_anchor_x = geom.x + (int32_t)geom.width;
+	}
+
 	geom.x -= a->i;
-	geom.width = (uint32_t)((int32_t)geom.width + a->i);
+	geom.width = (uint32_t)(wm.repeat_anchor_x - geom.x);
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	wm.repeat_geom = geom;
+	repeat_start(float_resize_w, a->i, repeat_rate_ms);
 }
 
 void float_resize_h(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -967,17 +1035,27 @@ void float_resize_h(void* data, uint32_t time, uint32_t value, uint32_t state)
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(float_resize_h, a->i);
 		return;
+	}
 
 	if (!wm.sel_client || !wm.sel_client->floating)
 		return;
 
 	struct swc_rectangle geom;
-	swc_window_get_geometry(wm.sel_client->win, &geom);
+	if (wm.repeat_fn == float_resize_h && wm.repeat_arg_i == a->i) {
+		geom = wm.repeat_geom;
+	} else {
+		swc_window_get_geometry(wm.sel_client->win, &geom);
+		wm.repeat_anchor_y = geom.y + (int32_t)geom.height;
+	}
+
 	geom.y -= a->i;
-	geom.height = (uint32_t)((int32_t)geom.height + a->i);
+	geom.height = (uint32_t)(wm.repeat_anchor_y - geom.y);
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	wm.repeat_geom = geom;
+	repeat_start(float_resize_h, a->i, repeat_rate_ms);
 }
 
 void float_resize_w_right(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -987,8 +1065,10 @@ void float_resize_w_right(void* data, uint32_t time, uint32_t value, uint32_t st
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(float_resize_w_right, a->i);
 		return;
+	}
 
 	if (!wm.sel_client || !wm.sel_client->floating)
 		return;
@@ -997,6 +1077,7 @@ void float_resize_w_right(void* data, uint32_t time, uint32_t value, uint32_t st
 	swc_window_get_geometry(wm.sel_client->win, &geom);
 	geom.width = (uint32_t)((int32_t)geom.width + a->i);
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	repeat_start(float_resize_w_right, a->i, repeat_rate_ms);
 }
 
 void float_resize_h_bottom(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -1006,8 +1087,10 @@ void float_resize_h_bottom(void* data, uint32_t time, uint32_t value, uint32_t s
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(float_resize_h_bottom, a->i);
 		return;
+	}
 
 	if (!wm.sel_client || !wm.sel_client->floating)
 		return;
@@ -1016,6 +1099,7 @@ void float_resize_h_bottom(void* data, uint32_t time, uint32_t value, uint32_t s
 	swc_window_get_geometry(wm.sel_client->win, &geom);
 	geom.height = (uint32_t)((int32_t)geom.height + a->i);
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	repeat_start(float_resize_h_bottom, a->i, repeat_rate_ms);
 }
 
 void float_scale(void* data, uint32_t time, uint32_t value, uint32_t state)
@@ -1025,19 +1109,30 @@ void float_scale(void* data, uint32_t time, uint32_t value, uint32_t state)
 
 	union arg* a = data;
 
-	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		repeat_stop(float_scale, a->i);
 		return;
+	}
 
 	if (!wm.sel_client || !wm.sel_client->floating)
 		return;
 
 	struct swc_rectangle geom;
-	swc_window_get_geometry(wm.sel_client->win, &geom);
-	geom.x -= a->i / 2;
-	geom.y -= a->i / 2;
+	if (wm.repeat_fn == float_scale && wm.repeat_arg_i == a->i) {
+		geom = wm.repeat_geom;
+	} else {
+		swc_window_get_geometry(wm.sel_client->win, &geom);
+		wm.repeat_anchor_x = geom.x + (int32_t)geom.width  / 2;
+		wm.repeat_anchor_y = geom.y + (int32_t)geom.height / 2;
+	}
+
 	geom.width  = (uint32_t)((int32_t)geom.width  + a->i);
 	geom.height = (uint32_t)((int32_t)geom.height + a->i);
+	geom.x = wm.repeat_anchor_x - (int32_t)geom.width  / 2;
+	geom.y = wm.repeat_anchor_y - (int32_t)geom.height / 2;
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	wm.repeat_geom = geom;
+	repeat_start(float_scale, a->i, repeat_rate_ms);
 }
 
 void new_screen(struct swc_screen* scr)
