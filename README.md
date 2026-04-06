@@ -3,7 +3,7 @@ Based on [wsxwm](https://git.sr.ht/~uint/wsxwm) and borrowed from [hevel](https:
 
 ## Why
 
-I wanted a compositor that combined the best parts of the projects I love — double borders, nein cursor, and smooth zoom/pan from [hevel](https://git.sr.ht/~dlm/hevel), and the keyboard-driven tiling/floating layout from [tohu](https://git.sr.ht/~shrub900/tohu) (itself a fork of `wsxwm`). Since `tohu` and `wsxwm` share the same base, `wsxwm` made the most sense as a starting point. `neuwm` is the result of pulling those features together into a single compositor.
+I wanted a compositor that combined the best parts of the projects I love — double borders, nein cursor, and smooth zoom/pan from [hevel](https://git.sr.ht/~dlm/hevel), and the keyboard-driven tiling/floating layout from [tohu](https://git.sr.ht/~shrub900/tohu) (itself a fork of [wsxwm](https://git.sr.ht/~unit/wsxwm)). Since `tohu` and `wsxwm` share the same base, `wsxwm` made the most sense as a starting point. `neuwm` is the result of pulling those features together into a single compositor.
 
 ## Inherited from wsxwm
 - Tiling and floating window management
