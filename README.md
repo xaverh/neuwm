@@ -46,6 +46,7 @@ Then the standard build dependencies:
 - xcb-composite
 - xcb-ewmh
 - xcb-icccm
+- luajit (for Lua config support)
 
 ## Build & Install
 

@@ -4,9 +4,9 @@ CFLAGS   = -std=c99 -Wall -Wextra -O2
 CPPFLAGS = -D_POSIX_C_SOURCE=200809L -Iinclude
 
 OUT      = neuwm
-SRC      = source/neuwm.c source/util.c
+SRC      = source/neuwm.c source/util.c source/lua-config.c
 
-PKGS = swc wayland-server xkbcommon libinput pixman-1 libdrm wld libudev xcb xcb-composite xcb-ewmh xcb-icccm
+PKGS = swc wayland-server xkbcommon libinput pixman-1 libdrm wld libudev xcb xcb-composite xcb-ewmh xcb-icccm luajit
 
 all: $(OUT)
 

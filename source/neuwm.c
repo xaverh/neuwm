@@ -6,7 +6,8 @@
 #include <wayland-server.h>
 #include <wayland-util.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
-#include "config.h"
+#include "nein_cursor.h"
+#include "lua-config.h"
 #include "types.h"
 #include "util.h"
 #include "neuwm.h"
@@ -158,6 +159,8 @@ static void setup_cursor(void)
 
 static void setup(void)
 {
+	load_config();
+
 	wm.dpy = wl_display_create();
 	if (!wm.dpy)
 		die(EXIT_FAILURE, "wl_display_create failed");
@@ -211,23 +214,22 @@ static void setup(void)
 
 static void setup_binds(void)
 {
-	for (size_t i = 0; i < LENGTH(binds); i++) {
+	for (size_t i = 0; i < nbinds; i++) {
 		const struct bind* b = &binds[i];
 		swc_add_binding(b->type, b->mods, b->ksym, b->fn, (void*)&b->arg);
 	}
-	swc_add_axis_binding(MOD4, 0, zoom_axis, NULL);
-	swc_add_binding(SWC_BINDING_BUTTON, SWC_MOD_ANY, BTN_LEFT, mouse_click, NULL);
+	for (size_t i = 0; i < naxis_binds; i++)
+		swc_add_axis_binding(axis_binds[i].mods, 0, axis_binds[i].fn, NULL);
 }
 
 static void autostart(void)
 {
-	const char* progs[] = { AUTOSTART };
-	for (size_t i = 0; i < sizeof(progs) / sizeof(progs[0]); i++) {
+	for (size_t i = 0; i < autostart_count; i++) {
 		pid_t pid = fork();
 		if (pid == 0) {
 			setsid();
 			if (fork() == 0) {
-				execl("/bin/sh", "sh", "-c", progs[i], NULL);
+				execl("/bin/sh", "sh", "-c", autostart_cmds[i], NULL);
 				_exit(1);
 			}
 			_exit(0);

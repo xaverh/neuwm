@@ -7,6 +7,8 @@ project('neuwm', 'c',
   ],
 )
 
+luajit_dep = dependency('luajit')
+
 pkg_deps = [
   dependency('swc'),
   dependency('wayland-server'),
@@ -29,10 +31,11 @@ executable('neuwm',
   sources : [
     'source/neuwm.c',
     'source/util.c',
+    'source/lua-config.c',
   ],
   include_directories : include_directories('include'),
   c_args : ['-D_POSIX_C_SOURCE=200809L', '-Wall', '-Wextra'],
-  dependencies : pkg_deps + [libm],
+  dependencies : pkg_deps + [libm, luajit_dep],
   install : true,
   install_dir : '/usr/local/bin',
 )
