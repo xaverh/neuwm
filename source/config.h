@@ -67,10 +67,10 @@ static struct bind binds[] = {
 	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_d,      { .v = NULL },    draw_mode_toggle },
 
 	/* floating move */
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Left,   { .i = -6 },      float_move_x },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Right,  { .i =  6 },      float_move_x },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Up,     { .i = -6 },      float_move_y },
-	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Down,   { .i =  6 },      float_move_y },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Left,   { .i = -10 },     float_move_x },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Right,  { .i =  10 },     float_move_x },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Up,     { .i = -10 },     float_move_y },
+	{ SWC_BINDING_KEY,    MOD4,       XKB_KEY_Down,   { .i =  10 },     float_move_y },
 
 	/* floating resize - left/top anchored (expands leftward/upward) */
 	{ SWC_BINDING_KEY,    MOD4|SHFT,  XKB_KEY_Left,   { .i =  6 },      float_resize_w },
