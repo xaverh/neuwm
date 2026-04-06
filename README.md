@@ -48,10 +48,21 @@ Then the standard build dependencies:
 - xcb-icccm
 
 ## Build & Install
+
+### make
 ```sh
 make
 doas make install
 ```
+
+### meson
+```sh
+meson setup build
+ninja -C build
+doas ninja -C build install
+```
+
+To clean: `rm -rf build`
 
 ## Launch
 ```sh
