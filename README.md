@@ -73,8 +73,7 @@ To clean: `rm -rf build`
 ```sh
 #!/bin/sh -e
 export WLD_DRM_DUMB=1
-swall -m zoom-fill /path/to/wallpaper.jpg &
-~/.config/mojito/status.sh | mojito -f "monospace-10" &
+export XDG_SESSION_DESKTOP=neuwm
 swc-launch neuwm
 ```
 
