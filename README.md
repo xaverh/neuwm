@@ -74,7 +74,7 @@ To clean: `rm -rf build`
 #!/bin/sh -e
 export WLD_DRM_DUMB=1
 export XDG_SESSION_DESKTOP=neuwm
-dbus-run-session swc-launch neuwm
+swc-launch neuwm
 ```
 
 ## Configuration
