@@ -30,10 +30,13 @@ termcmd = { "st-wl" }
 
 -- Commands executed via sh -c on startup (double-forked, non-blocking)
 autostart = {
+    'pipewire &',
+    'wireplumber &',
+    'pipewire-pulse &',
     'sh "$HOME/.config/mojito/status.sh"'
         .. ' | mojito -f "Tadepe:style=Bold:pixelsize=16:antialias=false"'
         .. ' -g "1900x20+10" &',
-    'swall -m scaled "$HOME/Pictures/wallpapers/rgb.png" &',
+    'swall -m scaled "$HOME/Pictures/wallpapers/Dark-hue.jpg" &',
 }
 
 -- Key / button / axis bindings
@@ -49,6 +52,11 @@ autostart = {
 binds = {
 
     -- spawners
+    { "key",    "",            "XF86MonBrightnessDown", "spawn", { "brightnessctl", "set", "5%-" } },
+    { "key",    "",            "XF86MonBrightnessUp",   "spawn", { "brightnessctl", "set", "5%+" } },
+    { "key",    "",            "XF86AudioLowerVolume",  "spawn", { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-" } },
+    { "key",    "",            "XF86AudioRaiseVolume",  "spawn", { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+" } },
+    { "key",    "",            "XF86AudioMute",         "spawn", { "wpctl", "set-mute",   "@DEFAULT_AUDIO_SINK@", "toggle" } },
     { "key",    "mod4",        "Return", "spawn", { "st-wl" } },
     { "key",    "mod4",        "space",  "spawn", { "neumenu_run",
                                                      "-fn", "tadepe",
