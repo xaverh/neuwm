@@ -30,9 +30,9 @@ termcmd = { "st-wl" }
 
 -- Commands executed via sh -c on startup (double-forked, non-blocking)
 autostart = {
-    'pkill -x pipewire; pkill -x wireplumber; pkill pipewire-pulse; sleep 0.2; pipewire',
-    'sleep 0.5; wireplumber',
-    'sleep 0.5; pipewire-pulse',
+    'pgrep -x pipewire || pipewire',
+    'sleep 0.5; pgrep -x wireplumber || wireplumber',
+    'sleep 0.5; pgrep -x pipewire-pulse || pipewire-pulse',
     'sh "$HOME/.config/mojito/status.sh"'
         .. ' | mojito -f "Tadepe:style=Bold:pixelsize=16:antialias=false"'
         .. ' -g "1900x20+10" &',
