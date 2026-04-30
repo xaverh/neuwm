@@ -25,7 +25,7 @@ I wanted a compositor that combined the best parts of the projects I love — do
 - Keyboard move and resize for floating windows
 - Click to focus and reset zoom; hover focus suppressed while zoomed
 - Pan canvas by dragging empty desktop with `mod+left-click`
-- Mode indicator written to `/tmp/neuwm_mode` for status bar integration
+- IPC support via [neuipc](https://codeberg.org/binkd/neuipc) — Unix socket at `/tmp/neuwm.sock`, `neuwmctl` CLI for querying and subscribing
 
 ## Known issues
 - Zoom and workspaces are incompatible due to a swc compositor limitation;
@@ -38,6 +38,7 @@ I wanted a compositor that combined the best parts of the projects I love — do
 Install these first:
 - [neuwld](https://git.sr.ht/~shrub900/neuwld) — patched wld rendering library
 - [neuswc](https://git.sr.ht/~shrub900/neuswc) — patched swc compositor
+- [neuipc](https://codeberg.org/binkd/neuipc) — lightweight Unix IPC library
 
 Then the standard build dependencies:
 - wayland-server
@@ -78,7 +79,18 @@ swc-launch neuwm
 ```
 
 ## Configuration
-Edit `source/config.h` and recompile.
+Edit `~/.config/neuwm/config.lua`. Falls back to built-in defaults if missing.
+
+## IPC
+neuwm exposes a Unix socket at `/tmp/neuwm.sock`. Use `neuwmctl` to query or subscribe:
+
+```sh
+neuwmctl get_workspace    # current workspace and max: "1 9"
+neuwmctl get_workspaces   # current + workspaces with windows: "1 4 5"
+neuwmctl get_mode         # tile or float
+neuwmctl sub ws           # subscribe to workspace change events
+neuwmctl sub mode         # subscribe to mode change events
+```
 
 ## Keybinds
 | Keybind | Action |

@@ -11,6 +11,7 @@
 #include "types.h"
 #include "util.h"
 #include "neuwm.h"
+#include "neuwm-ipc.h"
 #include <sys/wait.h>
 #include <libinput.h>
 
@@ -197,6 +198,7 @@ static void setup(void)
 
 	setup_cursor();
 	setup_binds();
+	ipc_init();
 
 	const char* sock;
 	sock = wl_display_add_socket_auto(wm.dpy);
@@ -1319,12 +1321,7 @@ void toggle_float_global(void* data, uint32_t time, uint32_t value, uint32_t sta
 		return;
 
 	wm.global_floating = !wm.global_floating;
-
-	FILE* f = fopen("/tmp/neuwm_mode", "w");
-	if (f) {
-		fprintf(f, "%s\n", wm.global_floating ? "float" : "tile");
-		fclose(f);
-	}
+	ipc_emit_mode();
 
 	struct client* c;
 	struct client* tmp;
@@ -1395,6 +1392,7 @@ void workspace_goto(void* data, uint32_t time, uint32_t value, uint32_t state)
 		return;
 
 	wm.ws = a->u;
+	ipc_emit_ws();
 	sync_window_visibility();
 
 	if (!wm.sel_screen)
@@ -1430,6 +1428,7 @@ void workspace_moveto(void* data, uint32_t time, uint32_t value, uint32_t state)
 		return;
 
 	c->ws = a->u;
+	ipc_emit_ws();
 	if (c->ws == wm.ws)
 		swc_window_show(c->win);
 	else
@@ -1450,6 +1449,7 @@ int main(void)
 {
 	setup();
 	wl_display_run(wm.dpy);
+	ipc_finish();
 	swc_finalize();
 	wl_display_destroy(wm.dpy);
 	return EXIT_SUCCESS;

@@ -8,6 +8,7 @@ project('neuwm', 'c',
 )
 
 luajit_dep = dependency('luajit')
+neuipc_dep = dependency('neuipc')
 
 pkg_deps = [
   dependency('swc'),
@@ -32,10 +33,18 @@ executable('neuwm',
     'source/neuwm.c',
     'source/util.c',
     'source/lua-config.c',
+    'source/neuwm-ipc.c',
   ],
   include_directories : include_directories('include'),
   c_args : ['-D_POSIX_C_SOURCE=200809L', '-Wall', '-Wextra'],
-  dependencies : pkg_deps + [libm, luajit_dep],
+  dependencies : pkg_deps + [libm, luajit_dep, neuipc_dep],
+  install : true,
+  install_dir : '/usr/local/bin',
+)
+
+executable('neuwmctl',
+  sources : ['source/neuwmctl.c'],
+  c_args : ['-D_POSIX_C_SOURCE=200809L'],
   install : true,
   install_dir : '/usr/local/bin',
 )
