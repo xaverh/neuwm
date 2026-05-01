@@ -129,6 +129,7 @@ static void on_win_destroy(void* data)
 	}
 
 	tile(c->scr);
+	ipc_emit_ws();
 	free(c);
 }
 
@@ -1239,6 +1240,7 @@ void new_window(struct swc_window* win)
 	swc_window_show(win);
 	focus(c, true);
 	tile(wm.sel_screen);
+	ipc_emit_ws();
 
 	_log(stderr, "new_window=%p\n", (void*)win);
 }

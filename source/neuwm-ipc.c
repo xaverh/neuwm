@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <wayland-server.h>
 #include <neuipc/neuipc.h>
 
@@ -22,7 +23,8 @@ workspace_max(void)
 		if (c->ws > max) max = c->ws;
 
 	for (size_t i = 0; i < nbinds; i++)
-		if (binds[i].fn == workspace_goto && binds[i].arg.u > max)
+		if ((binds[i].fn == workspace_goto || binds[i].fn == workspace_moveto)
+				&& binds[i].arg.u > max)
 			max = binds[i].arg.u;
 
 	return max;
@@ -43,20 +45,23 @@ q_get_workspaces(char **args, void *userdata)
 	(void)args; (void)userdata;
 	swc_ipc_status s = { .ok = true };
 
-	uint8_t has_window[256] = {0};
+	uint32_t max = workspace_max();
+	uint8_t *has_window = calloc(max + 1, 1);
+	if (!has_window) return s;
+
 	struct client *c;
 	wl_list_for_each(c, &wm.tiled, tiled_link)
-		has_window[c->ws] = 1;
+		if (c->ws <= max) has_window[c->ws] = 1;
 	wl_list_for_each(c, &wm.floating, float_link)
-		has_window[c->ws] = 1;
+		if (c->ws <= max) has_window[c->ws] = 1;
 
 	int len = snprintf(s.msg, sizeof(s.msg), "%u", wm.ws);
-	uint32_t max = workspace_max();
 	for (uint32_t i = 1; i <= max && len < (int)sizeof(s.msg) - 4; i++) {
 		if (i != wm.ws && has_window[i])
 			len += snprintf(s.msg + len, sizeof(s.msg) - len, " %u", i);
 	}
 
+	free(has_window);
 	return s;
 }
 

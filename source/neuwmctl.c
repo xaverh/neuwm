@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,10 +41,16 @@ int main(int argc, char **argv)
 	}
 	strncat(cmd, "\n", sizeof(cmd) - strlen(cmd) - 1);
 
-	if (write(fd, cmd, strlen(cmd)) < 0) {
-		perror("write");
-		close(fd);
-		return 1;
+	size_t total = strlen(cmd), sent = 0;
+	while (sent < total) {
+		ssize_t n = write(fd, cmd + sent, total - sent);
+		if (n < 0) {
+			if (errno == EINTR) continue;
+			perror("write");
+			close(fd);
+			return 1;
+		}
+		sent += n;
 	}
 
 	int is_sub = strcmp(argv[1], "sub") == 0;
