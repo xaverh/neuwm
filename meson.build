@@ -7,23 +7,28 @@ project('neuwm', 'c',
   ],
 )
 
+os = host_machine.system()
+
 luajit_dep = dependency('luajit')
 neuipc_dep = dependency('neuipc')
+
+libinput_dep = os == 'linux' ? dependency('libinput') : dependency('', required: false)
+libudev_dep = os == 'linux' ? dependency('libudev') : dependency('', required: false)
 
 pkg_deps = [
   dependency('swc'),
   dependency('wayland-server'),
   dependency('xkbcommon'),
-  dependency('libinput'),
+  libinput_dep,
   dependency('pixman-1'),
   dependency('libdrm'),
   dependency('wld'),
-  dependency('libudev'),
+  libudev_dep,
   dependency('xcb'),
   dependency('xcb-composite'),
-  dependency('xcb-ewmh'),
-  dependency('xcb-icccm'),
-]
+  dependency('xcb-ewmh', required: false),
+  dependency('xcb-icccm', required: false),
+  ]
 
 cc = meson.get_compiler('c')
 libm = cc.find_library('m', required : true)

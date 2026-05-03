@@ -13,7 +13,10 @@
 #include "neuwm.h"
 #include "neuwm-ipc.h"
 #include <sys/wait.h>
+
+#ifdef __linux__
 #include <libinput.h>
+#endif
 
 static void autostart(void);
 static void focus(struct client* c, bool raise);
@@ -1247,6 +1250,7 @@ void new_window(struct swc_window* win)
 
 void new_device(struct libinput_device* dev)
 {
+#ifdef __linux__
 	if (!libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_POINTER))
 		return;
 
@@ -1268,6 +1272,9 @@ void new_device(struct libinput_device* dev)
 	/* disable while typing */
 	if (libinput_device_config_dwt_is_available(dev))
 		libinput_device_config_dwt_set_enabled(dev, LIBINPUT_CONFIG_DWT_ENABLED);
+#else
+    (void)dev;
+#endif
 }
 
 void quit(void* data, uint32_t time, uint32_t value, uint32_t state)
