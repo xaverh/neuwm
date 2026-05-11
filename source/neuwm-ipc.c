@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wayland-server.h>
+#include <swc.h>
 #include <neuipc/neuipc.h>
 
 #include "neuwm-ipc.h"
@@ -74,6 +75,22 @@ q_get_mode(char **args, void *userdata)
 	return s;
 }
 
+static swc_ipc_status
+q_get_cursor(char **args, void *userdata)
+{
+	(void)args; (void)userdata;
+	swc_ipc_status s = { .ok = true };
+	int32_t fx, fy;
+	if (swc_cursor_position(&fx, &fy)) {
+		snprintf(s.msg, sizeof(s.msg), "%d %d",
+			wl_fixed_to_int(fx), wl_fixed_to_int(fy));
+	} else {
+		s.ok = false;
+		snprintf(s.msg, sizeof(s.msg), "no cursor");
+	}
+	return s;
+}
+
 static int
 ipc_callback(int fd, uint32_t mask, void *data)
 {
@@ -91,6 +108,7 @@ ipc_init(void)
 	swc_ipc_register("get_workspace",  q_get_workspace,  NULL);
 	swc_ipc_register("get_workspaces", q_get_workspaces, NULL);
 	swc_ipc_register("get_mode",       q_get_mode,       NULL);
+	swc_ipc_register("get_cursor",     q_get_cursor,     NULL);
 
 	wl_event_loop_add_fd(wm.ev_loop, swc_ipc_get_fd(),
 		WL_EVENT_READABLE, ipc_callback, NULL);
