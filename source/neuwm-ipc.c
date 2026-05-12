@@ -91,6 +91,23 @@ q_get_cursor(char **args, void *userdata)
 	return s;
 }
 
+static swc_ipc_status
+q_get_focused(char **args, void *userdata)
+{
+	(void)args; (void)userdata;
+	swc_ipc_status s = { .ok = true };
+	if (!wm.sel_client) {
+		s.ok = false;
+		snprintf(s.msg, sizeof(s.msg), "no focused window");
+		return s;
+	}
+	struct swc_rectangle geom;
+	swc_window_get_geometry(wm.sel_client->win, &geom);
+	snprintf(s.msg, sizeof(s.msg), "%d,%d %ux%u",
+		geom.x, geom.y, geom.width, geom.height);
+	return s;
+}
+
 static int
 ipc_callback(int fd, uint32_t mask, void *data)
 {
@@ -109,6 +126,7 @@ ipc_init(void)
 	swc_ipc_register("get_workspaces", q_get_workspaces, NULL);
 	swc_ipc_register("get_mode",       q_get_mode,       NULL);
 	swc_ipc_register("get_cursor",     q_get_cursor,     NULL);
+	swc_ipc_register("get_focused",   q_get_focused,    NULL);
 
 	wl_event_loop_add_fd(wm.ev_loop, swc_ipc_get_fd(),
 		WL_EVENT_READABLE, ipc_callback, NULL);
