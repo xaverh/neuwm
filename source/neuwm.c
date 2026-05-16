@@ -1,11 +1,16 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <swc.h>
 #include <wayland-server.h>
 #include <wayland-util.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
+#include "themes/motif_active.h"
+#include "themes/motif_inactive.h"
+#include "themes/motif_notitle_active.h"
+#include "themes/motif_notitle_inactive.h"
 #include "nein_cursor.h"
 #include "lua-config.h"
 #include "types.h"
@@ -49,6 +54,51 @@ struct swc_screen_handler screen_handler = {
 	.usable_geometry_changed = on_screen_usable_geometry_changed,
 };
 
+struct neuwm_theme {
+	const char                   *name;
+	const struct swc_decor_parts *active;
+	const struct swc_decor_parts *inactive;
+};
+
+static const struct neuwm_theme themes[] = {
+    { "motif",        &motif_active_parts,        &motif_inactive_parts        },
+    { "motif-notitle", &motif_notitle_active_parts, &motif_notitle_inactive_parts },
+    { NULL, NULL, NULL },
+};
+
+static void apply_decor(struct client *c, bool active)
+{
+	if (!cfg.decor_on || c->fullscreen) {
+		swc_window_set_decor(c->win, NULL);
+		return;
+	}
+
+	struct swc_decor d = cfg.decor;
+	d.title.string = c->win->title;
+
+	const struct swc_decor_parts *parts = NULL;
+	if (cfg.decor_theme && cfg.decor_theme[0] != '\0') {
+		bool found = false;
+		for (int i = 0; themes[i].name != NULL; i++) {
+			if (strcmp(themes[i].name, cfg.decor_theme) == 0) {
+				parts = active ? themes[i].active : themes[i].inactive;
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			static bool warned = false;
+			if (!warned) {
+				fprintf(stderr, "neuwm: unknown decor theme: %s\n", cfg.decor_theme);
+				warned = true;
+			}
+		}
+	}
+
+	d.parts = parts;
+	swc_window_set_decor(c->win, &d);
+}
+
 static void focus(struct client* c, bool raise)
 {
 	if (swc_get_zoom() != 1.0f) {
@@ -58,19 +108,23 @@ static void focus(struct client* c, bool raise)
 		if (wm.zoom_timer)
 			wl_event_source_timer_update(wm.zoom_timer, 1);
 	}
-	if (wm.sel_client)
+	if (wm.sel_client) {
 		swc_window_set_border(
 			wm.sel_client->win,
 			cfg.border_col_normal, cfg.border_width,
 			cfg.outer_border_col_normal, cfg.outer_border_width
 		);
+		apply_decor(wm.sel_client, false);
+	}
 
-	if (c)
+	if (c) {
 		swc_window_set_border(
 			c->win,
 			cfg.border_col_active, cfg.border_width,
 			cfg.outer_border_col_active, cfg.outer_border_width
 		);
+		apply_decor(c, true);
+	}
 
 	if (raise && c && c->floating)
 		set_floating(c, true, true);
@@ -1241,6 +1295,7 @@ void new_window(struct swc_window* win)
 	}
 
 	swc_window_show(win);
+	apply_decor(c, false);
 	focus(c, true);
 	tile(wm.sel_screen);
 	ipc_emit_ws();
@@ -1365,6 +1420,7 @@ void fullscreen(void* data, uint32_t time, uint32_t value, uint32_t state)
 	if (wm.sel_client->fullscreen) {
 		wm.sel_client->fullscreen = false;
 		swc_window_set_stacked(wm.sel_client->win);
+		apply_decor(wm.sel_client, true);
 		if (wm.sel_client->w > 0 && wm.sel_client->h > 0) {
 			geom.x = wm.sel_client->x;
 			geom.y = wm.sel_client->y;
@@ -1382,6 +1438,7 @@ void fullscreen(void* data, uint32_t time, uint32_t value, uint32_t state)
 	wm.sel_client->y = saved.y;
 	wm.sel_client->w = saved.width;
 	wm.sel_client->h = saved.height;
+	apply_decor(wm.sel_client, true);
 	swc_window_set_fullscreen(wm.sel_client->win, wm.sel_client->scr->scr);
 }
 

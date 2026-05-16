@@ -61,6 +61,9 @@ static void set_defaults(void)
 	cfg.float_w                 = 802;
 	cfg.float_h                 = 500;
 	cfg.zoom_level              = 0.5f;
+	cfg.decor_on               = false;
+	cfg.decor_theme            = NULL;
+	memset(&cfg.decor, 0, sizeof(cfg.decor));
 
 	termcmd         = s_termcmd;
 	autostart_cmds  = s_autostart;
@@ -379,6 +382,79 @@ static void get_color(lua_State *L, const char *name, uint32_t *dst)
 	lua_pop(L, 1);
 }
 
+static void parse_decor(lua_State *L)
+{
+	lua_getfield(L, -1, "color");
+	if (lua_isnumber(L, -1))
+		cfg.decor.color = (uint32_t)(lua_Integer)lua_tointeger(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, -1, "top");
+	if (lua_isnumber(L, -1)) cfg.decor.top = (uint32_t)lua_tonumber(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, -1, "right");
+	if (lua_isnumber(L, -1)) cfg.decor.right = (uint32_t)lua_tonumber(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, -1, "bottom");
+	if (lua_isnumber(L, -1)) cfg.decor.bottom = (uint32_t)lua_tonumber(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, -1, "left");
+	if (lua_isnumber(L, -1)) cfg.decor.left = (uint32_t)lua_tonumber(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, -1, "title");
+	if (lua_istable(L, -1)) {
+		lua_getfield(L, -1, "enabled");
+		if (lua_isboolean(L, -1)) cfg.decor.title.enabled = lua_toboolean(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "edge");
+		if (lua_isstring(L, -1)) {
+			const char *s = lua_tostring(L, -1);
+			if      (strcmp(s, "top")    == 0) cfg.decor.title.edge = SWC_DECOR_EDGE_TOP;
+			else if (strcmp(s, "right")  == 0) cfg.decor.title.edge = SWC_DECOR_EDGE_RIGHT;
+			else if (strcmp(s, "bottom") == 0) cfg.decor.title.edge = SWC_DECOR_EDGE_BOTTOM;
+			else if (strcmp(s, "left")   == 0) cfg.decor.title.edge = SWC_DECOR_EDGE_LEFT;
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "align");
+		if (lua_isstring(L, -1)) {
+			const char *s = lua_tostring(L, -1);
+			if      (strcmp(s, "start")  == 0) cfg.decor.title.align = SWC_DECOR_ALIGN_START;
+			else if (strcmp(s, "center") == 0) cfg.decor.title.align = SWC_DECOR_ALIGN_CENTER;
+			else if (strcmp(s, "end")    == 0) cfg.decor.title.align = SWC_DECOR_ALIGN_END;
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "color");
+		if (lua_isnumber(L, -1))
+			cfg.decor.title.color = (uint32_t)(lua_Integer)lua_tointeger(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "padding");
+		if (lua_isnumber(L, -1)) cfg.decor.title.padding = (uint32_t)lua_tonumber(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "offset_x");
+		if (lua_isnumber(L, -1)) cfg.decor.title.offset_x = (int32_t)lua_tonumber(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "offset_y");
+		if (lua_isnumber(L, -1)) cfg.decor.title.offset_y = (int32_t)lua_tonumber(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "font");
+		if (lua_isstring(L, -1))
+			cfg.decor.title.font = strdup(lua_tostring(L, -1));
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+}
+
 /* ---------------------------------------------------------------- public API */
 
 void load_config(void)
@@ -443,6 +519,23 @@ void load_config(void)
 	lua_getglobal(L, "binds");
 	if (lua_istable(L, -1))
 		parse_binds(L);
+	lua_pop(L, 1);
+
+	/* --- decor --- */
+	lua_getglobal(L, "decor_on");
+	if (lua_isboolean(L, -1)) cfg.decor_on = lua_toboolean(L, -1);
+	lua_pop(L, 1);
+
+	lua_getglobal(L, "decor_theme");
+	if (lua_isstring(L, -1)) {
+		free(cfg.decor_theme);
+		cfg.decor_theme = strdup(lua_tostring(L, -1));
+	}
+	lua_pop(L, 1);
+
+	lua_getglobal(L, "decor");
+	if (lua_istable(L, -1))
+		parse_decor(L);
 	lua_pop(L, 1);
 
 	lua_close(L);

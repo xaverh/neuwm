@@ -71,6 +71,9 @@ struct config {
 	uint32_t        float_w;
 	uint32_t        float_h;
 	float           zoom_level;
+	bool             decor_on;
+	struct swc_decor decor;
+	char            *decor_theme;
 };
 
 struct grab {

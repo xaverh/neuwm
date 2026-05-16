@@ -33,10 +33,9 @@ autostart = {
     'pgrep -x pipewire || pipewire',
     'sleep 0.5; pgrep -x wireplumber || wireplumber',
     'sleep 0.5; pgrep -x pipewire-pulse || pipewire-pulse',
-    'sh "$HOME/.config/mojito/status.sh"'
-        .. ' | mojito -f "Tadepe:style=Bold:pixelsize=16:antialias=false"'
-        .. ' -g "1900x20+10" &',
-    'swall -m scaled "$HOME/Pictures/wallpapers/Dark-hue.jpg" &',
+    'brightnessctl set 40%',
+    'sh $HOME/.config/mojito/status.sh | mojito -g "1900x20+10" &',
+    'swall -m scaled "$HOME/Pictures/walls/wallhaven-mpl1x8.jpg" &',
 }
 
 -- Key / button / axis bindings
@@ -134,4 +133,31 @@ binds = {
     { "key",    "mod4+shift",  "7",      "workspace_moveto",  7 },
     { "key",    "mod4+shift",  "8",      "workspace_moveto",  8 },
     { "key",    "mod4+shift",  "9",      "workspace_moveto",  9 },
+}
+
+-- Window decorations (disabled by default)
+-- Remove comment markers below to enable.
+--
+decor_on = true
+--
+-- Theme selection:
+--   "motif"        	Motif theme (compiled-in PNG theme)
+--   "motif-notitle"    Motif theme without titlebar (compiled-in PNG theme)
+--   unset        	solid color only
+--
+decor_theme = "motif"
+--
+decor = {
+    color  = 0xff222222,
+    top    = 23,
+    right  = 6,
+    bottom = 6,
+    left   = 6,
+    title = {
+        enabled = true,
+        edge    = "top",
+        align   = "center",
+        padding = 4,
+        font    = "Tadepe:style=Bold:pixelsize=16:antialias=false",
+    },
 }
