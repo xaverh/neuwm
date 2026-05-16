@@ -149,7 +149,7 @@ decor_theme = "motif"
 --
 decor = {
     color  = 0xff222222,
-    top    = 23,
+    top    = 23, -- motif = 23 motif-notitle = 6 
     right  = 6,
     bottom = 6,
     left   = 6,
