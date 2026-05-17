@@ -24,6 +24,7 @@
 #include <libinput.h>
 #endif
 
+static void apply_decor(struct client *c, bool active);
 static void autostart(void);
 static void focus(struct client* c, bool raise);
 static void on_screen_destroy(void* data);
@@ -47,8 +48,17 @@ struct wm wm;
 const struct swc_manager manager = {
 	.new_screen = new_screen, .new_window = new_window, .new_device = new_device,
 };
+static void on_win_title_changed(void *data)
+{
+	struct client *c = data;
+	if (cfg.decor_on)
+		apply_decor(c, c == wm.sel_client);
+}
+
 struct swc_window_handler window_handler = {
-	.destroy = on_win_destroy, .entered = on_win_entered,
+	.destroy       = on_win_destroy,
+	.entered       = on_win_entered,
+	.title_changed = on_win_title_changed,
 };
 struct swc_screen_handler screen_handler = {
 	.destroy = on_screen_destroy,
@@ -97,6 +107,10 @@ static void apply_decor(struct client *c, bool active)
 	}
 
 	d.parts = parts;
+	fprintf(stderr, "apply_decor: title=%s enabled=%d color=0x%08x\n",
+		d.title.string ? d.title.string : "(null)",
+		d.title.enabled,
+		d.title.color);
 	swc_window_set_decor(c->win, &d);
 }
 
