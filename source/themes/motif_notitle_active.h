@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <swc.h>
 
-/* generated from active png decor parts, probably dont edit this */
+/* generated from notitle-active png decor parts, probably dont edit this */
 
 static const uint32_t motif_notitle_active_top_left_pixels[] = {
     0xff729fcfu, 0xff729fcfu, 0xff729fcfu, 0xff729fcfu, 0xff729fcfu, 0xff729fcfu, 0xff729fcfu, 0xff729fcfu,

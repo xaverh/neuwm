@@ -7,10 +7,6 @@
 #include <wayland-server.h>
 #include <wayland-util.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
-#include "themes/motif_active.h"
-#include "themes/motif_inactive.h"
-#include "themes/motif_notitle_active.h"
-#include "themes/motif_notitle_inactive.h"
 #include "nein_cursor.h"
 #include "lua-config.h"
 #include "types.h"
@@ -18,6 +14,11 @@
 #include "neuwm.h"
 #include "neuwm-ipc.h"
 #include <sys/wait.h>
+
+#include "themes/motif_active.h"
+#include "themes/motif_inactive.h"
+#include "themes/motif_notitle_active.h"
+#include "themes/motif_notitle_inactive.h"
 
 #ifdef __linux__
 #include <libinput.h>
@@ -62,7 +63,7 @@ struct neuwm_theme {
 
 static const struct neuwm_theme themes[] = {
     { "motif",        &motif_active_parts,        &motif_inactive_parts        },
-    { "motif-notitle", &motif_notitle_active_parts, &motif_notitle_inactive_parts },
+    { "motif-notitle",&motif_notitle_active_parts, &motif_notitle_inactive_parts},
     { NULL, NULL, NULL },
 };
 
