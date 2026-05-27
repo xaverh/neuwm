@@ -32,7 +32,7 @@ I wanted a compositor that combined the best parts of the projects I love — do
   hidden windows from other workspaces become visible when zoomed out.
   Workspace switching resets zoom but the underlying issue remains.
 
-  #### A scrolling infinite canvas layout based on [niri](https://github.com/YaLTeR/niri) is planned to replace workspaces entirely in future releases
+  #### An infinite canvas layout is planned to replace workspaces entirely in future releases
 
 ## Dependencies
 Install these first:
@@ -84,10 +84,12 @@ export WLD_DRM_DUMB=1
 export XDG_SESSION_DESKTOP=neuwm
 swc-launch neuwm
 ```
-To clean: `rm -rf build-muon`
 
 ## Configuration
 Edit `~/.config/neuwm/config.lua`. Falls back to built-in defaults if missing.
+
+## Decoration themes
+Window decorations are provided by neuswc. To use them, clone the [decor](https://codeberg.org/shrub900/decor) collection and follow the per-theme `info` file for correct widths. Set the theme path in `~/.config/neuwm/config.lua`.
 
 ## IPC
 neuwm exposes a Unix socket at `/tmp/neuwm.sock`. Use `neuwmctl` to query or subscribe:
@@ -154,6 +156,7 @@ To make neuwm usable, the following programs are highly recomended
 - [neubar](https://git.sr.ht/~pfr/neubar) — event-driven status bar feeder for mojito; uses neuwm IPC for workspace/mode updates and inotify for package count, replacing polling shell scripts
 - [wawa](https://codeberg.org/sewn/wawa) — minimal layer shell wallpaper setter
 - [chum](https://git.sr.ht/~dlm/chum) — interactive region picker, required for `swcsnap region`
+- [decor](https://codeberg.org/shrub900/decor) — window decoration theme collection for neuswc; includes a `png2swc` conversion script and per-theme width info
 
 ## Credits
 - [~shrub900](https://git.sr.ht/~shrub900/)
