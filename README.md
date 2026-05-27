@@ -68,7 +68,14 @@ ninja -C build
 doas ninja -C build install
 ```
 
-To clean: `rm -rf build`
+### muon
+```sh
+muon setup build
+ninja -C build
+doas ninja -C build install
+```
+
+To clean, remove the build directory: `rm -rf build`
 
 ## Launch
 ```sh
@@ -77,6 +84,7 @@ export WLD_DRM_DUMB=1
 export XDG_SESSION_DESKTOP=neuwm
 swc-launch neuwm
 ```
+To clean: `rm -rf build-muon`
 
 ## Configuration
 Edit `~/.config/neuwm/config.lua`. Falls back to built-in defaults if missing.
@@ -127,6 +135,11 @@ Screenshots using neuswc's `swc_snap` protocol. Outputs PPM to stdout.
 swcsnap image screenshot.ppm
 ```
 
+Interactive region selection via `chum`
+```sh
+swcsnap region screenshot.ppm
+```
+
 ### swcrecord
 Screen recorder wrapping swcsnap with ffmpeg. Requires ffmpeg.
 ```sh
@@ -138,7 +151,9 @@ To make neuwm usable, the following programs are highly recomended
 - [hst](https://git.sr.ht/~dlm/hst) — a pre-patched and [freeway](https://git.sr.ht/~shrub900/freeway)-compatible version of [st-wl](https://github.com/ianbeyst/st-wl) with better font rendering using neuwld 
 - [neumenu](https://git.sr.ht/~uint/neumenu) — updated [dmenu](https://github.com/michaelforney/dmenu) fork for wayland using [neuwld](https://git.sr.ht/~shrub900/neuwld)
 - [mojito](https://git.sr.ht/~dlm/mojito) — featherweight, lemonbar-compatible bar for neuswc-based compositors
-- [swall](https://git.sr.ht/~uint/swall) — wallpaper setter for neuswc
+- [neubar](https://git.sr.ht/~pfr/neubar) — event-driven status bar feeder for mojito; uses neuwm IPC for workspace/mode updates and inotify for package count, replacing polling shell scripts
+- [wawa](https://codeberg.org/sewn/wawa) — minimal layer shell wallpaper setter
+- [chum](https://git.sr.ht/~dlm/chum) — interactive region picker, required for `swcsnap region`
 
 ## Credits
 - [~shrub900](https://git.sr.ht/~shrub900/)
@@ -147,11 +162,13 @@ To make neuwm usable, the following programs are highly recomended
 - [~uint](https://git.sr.ht/~uint)
   - [wsxwm](https://git.sr.ht/~uint/wsxwm)
   - [neumenu](https://git.sr.ht/~uint/neumenu)
-  - [swall](https://git.sr.ht/~uint/swall)
 - [~dlm](https://git.sr.ht/~dlm)
   - [hevel](https://git.sr.ht/~dlm/hevel)
   - [mojito](https://git.sr.ht/~dlm/mojito)
   - [hst](https://git.sr.ht/~dlm/hst)
+  - [chum](https://git.sr.ht/~dlm/chum)
+- [sewn](https://codeberg.org/sewn)
+  - [wawa](https://codeberg.org/sewn/wawa)
 - [Michael Forney](https://github.com/michaelforney) for all of their amazing work, but specifically [swc](https://github.com/michaelforney/swc) & [wld](https://github.com/michaelforney/wld) 
 
 ## License
