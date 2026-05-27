@@ -134,7 +134,7 @@ binds = {
 -- Window decorations (disabled by default)
 -- Remove comment markers below to enable.
 --
-decor_on = false
+-- decor_on = true
 --
 -- Theme selection:
 --   "motif"        	Motif theme
