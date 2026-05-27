@@ -158,6 +158,9 @@ To make neuwm usable, the following programs are highly recomended
 - [chum](https://git.sr.ht/~dlm/chum) — interactive region picker, required for `swcsnap region`
 - [decor](https://codeberg.org/shrub900/decor) — window decoration theme collection for neuswc; includes a `png2swc` conversion script and per-theme width info
 
+## Screenshot
+![neuwm screenshot](assets/screenshot.png)
+
 ## Credits
 - [~shrub900](https://git.sr.ht/~shrub900/)
   - [neuswc](https://git.sr.ht/~shrub900/neuswc)
