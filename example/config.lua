@@ -11,7 +11,7 @@ outer_border_width       = 4
 
 -- Layout
 master_width = 60   -- percentage of screen width for master column
-gaps         = 10   -- outer and inner gap size in pixels
+gaps         = 15   -- outer and inner gap size in pixels
 
 -- Default floating window geometry
 float_x = 100
@@ -30,12 +30,12 @@ termcmd = { "st-wl" }
 
 -- Commands executed via sh -c on startup (double-forked, non-blocking)
 autostart = {
-    'pgrep -x pipewire || pipewire',
-    'sleep 0.5; pgrep -x wireplumber || wireplumber',
-    'sleep 0.5; pgrep -x pipewire-pulse || pipewire-pulse',
-    'brightnessctl set 40%',
-    'sh $HOME/.config/mojito/status.sh | mojito -g "1900x20+10" &',
-    'swall -m scaled "$HOME/Pictures/walls/wallhaven-mpl1x8.jpg" &',
+--    'pgrep -x pipewire || pipewire',
+--    'sleep 0.5; pgrep -x wireplumber || wireplumber',
+--    'sleep 0.5; pgrep -x pipewire-pulse || pipewire-pulse',
+--    'brightnessctl set 40%',
+--    'neubar | mojito -p -f "tadepe" -F "#abb2bf" -g "1900x20+10" &',
+--    'wawa stretch ~/Pictures/walls/the-souls-at-the-acheron.png &',
 }
 
 -- Key / button / axis bindings
@@ -56,13 +56,9 @@ binds = {
     { "key",    "",            "XF86AudioLowerVolume",  "spawn", { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-" } },
     { "key",    "",            "XF86AudioRaiseVolume",  "spawn", { "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+" } },
     { "key",    "",            "XF86AudioMute",         "spawn", { "wpctl", "set-mute",   "@DEFAULT_AUDIO_SINK@", "toggle" } },
-    { "key",    "mod4",        "Return", "spawn", { "st-wl" } },
-    { "key",    "mod4",        "space",  "spawn", { "neumenu_run",
-                                                     "-fn", "tadepe",
-                                                     "-nb", "#000000",
-                                                     "-sb", "#c678dd",
-                                                     "-sf", "#000000" } },
-    { "key",    "mod4",        "b",      "spawn", { "pkill", "-USR1", "mojito" } },
+    { "key",    "mod4",        "Return", 		"spawn", { "st-wl" } },
+    { "key",    "mod4",        "space",  		"spawn", { "neumenu_run" } },
+    { "key",    "mod4",        "b",      		"spawn", { "pkill", "-USR1", "mojito" } },
 
     -- window management
     { "key",    "mod4+shift",  "e",      "quit"                },
@@ -138,18 +134,18 @@ binds = {
 -- Window decorations (disabled by default)
 -- Remove comment markers below to enable.
 --
-decor_on = true
+decor_on = false
 --
 -- Theme selection:
---   "motif"        	Motif theme (compiled-in PNG theme)
---   "motif-notitle"    Motif theme without titlebar (compiled-in PNG theme)
+--   "motif"        	Motif theme
+--   "motif-notitle"	Motif theme without titlebar
 --   unset        	solid color only
 --
-decor_theme = "motif"
+decor_theme = "motif-notitle"
 --
 decor = {
     color  = 0xff222222,
-    top    = 23, -- motif = 23 motif-notitle = 6 
+    top    = 6, -- motif = 23 motif-notitle = 6 
     right  = 6,
     bottom = 6,
     left   = 6,
@@ -158,6 +154,7 @@ decor = {
         edge    = "top",
         align   = "center",
         padding = 4,
+	color	= 0xffffffff,
         font    = "Tadepe:style=Bold:pixelsize=16:antialias=false",
     },
 }
