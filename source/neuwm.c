@@ -247,7 +247,7 @@ static void setup(void)
 	wm.grab.active      = false;
 	wm.grab.resize      = false;
 	wm.grab.c           = NULL;
-	wm.global_floating  = false;
+	wm.global_floating  = true;
 	wm.ws               = 1;
 	wm.zoom_target      = 1.0f;
 	wm.zoom_timer       = NULL;
@@ -284,7 +284,8 @@ static void setup(void)
 	signal(SIGTERM, sig_handler);
 	signal(SIGQUIT, sig_handler);
 
-    autostart();
+	ipc_emit_mode();
+	autostart();
 }
 
 static void setup_binds(void)
