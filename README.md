@@ -13,10 +13,10 @@ I wanted a compositor that combined the best parts of the projects I love — do
 - Mouse move and resize for floating windows
 
 ## Borrowed from hevel
-- Plan 9 nein cursor theme (from [hevel](https://git.sr.ht/~dlm/hevel))
-- Double window borders (from [hevel](https://git.sr.ht/~dlm/hevel))
-- Compositor zoom in/out via scroll wheel with smooth easing (from [hevel](https://git.sr.ht/~dlm/hevel))
-- Draw-to-spawn terminals — press `mod+d`, drag to define window size (inspired by [hevel](https://git.sr.ht/~dlm/hevel))
+- Plan 9 nein cursor theme
+- Double window borders
+- Compositor zoom in/out via scroll wheel with smooth easing
+- Draw-to-spawn terminals — press `mod+d`, drag to define window size
 
 ## Added in neuwm
 - Resize height of stacked windows `mod+j/k`
