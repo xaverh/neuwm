@@ -17,7 +17,7 @@ I wanted a compositor that combined the best parts of the projects I love — do
 - Double window borders (from [hevel](https://git.sr.ht/~dlm/hevel))
 - Compositor zoom in/out via scroll wheel with smooth easing (from [hevel](https://git.sr.ht/~dlm/hevel))
 - Draw-to-spawn terminals — press `mod+d`, drag to define window size (inspired by [hevel](https://git.sr.ht/~dlm/hevel))
-  
+
 ## Added in neuwm
 - Resize height of stacked windows `mod+j/k`
 - Cascading floating window placement with screen boundary awareness
@@ -55,27 +55,12 @@ Then the standard build dependencies:
 
 ## Build & Install
 
-### make
-```sh
-make
-doas make install
-```
-
 ### meson
 ```sh
 meson setup build
 ninja -C build
 doas ninja -C build install
 ```
-
-### muon
-```sh
-muon setup build
-ninja -C build
-doas ninja -C build install
-```
-
-To clean, remove the build directory: `rm -rf build`
 
 ## Launch
 ```sh
@@ -150,7 +135,7 @@ swcsnap record output.mp4
 
 ## Recommended
 To make neuwm usable, the following programs are highly recomended
-- [hst](https://git.sr.ht/~dlm/hst) — a pre-patched and [freeway](https://git.sr.ht/~shrub900/freeway)-compatible version of [st-wl](https://github.com/ianbeyst/st-wl) with better font rendering using neuwld 
+- [hst](https://git.sr.ht/~dlm/hst) — a pre-patched and [freeway](https://git.sr.ht/~shrub900/freeway)-compatible version of [st-wl](https://github.com/ianbeyst/st-wl) with better font rendering using neuwld
 - [neumenu](https://git.sr.ht/~uint/neumenu) — updated [dmenu](https://github.com/michaelforney/dmenu) fork for wayland using [neuwld](https://git.sr.ht/~shrub900/neuwld)
 - [mojito](https://git.sr.ht/~dlm/mojito) — featherweight, lemonbar-compatible bar for neuswc-based compositors
 - [neubar](https://git.sr.ht/~pfr/neubar) — event-driven status bar feeder for mojito; uses neuwm IPC for workspace/mode updates and inotify for package count, replacing polling shell scripts
@@ -175,7 +160,7 @@ To make neuwm usable, the following programs are highly recomended
   - [chum](https://git.sr.ht/~dlm/chum)
 - [sewn](https://codeberg.org/sewn)
   - [wawa](https://codeberg.org/sewn/wawa)
-- [Michael Forney](https://github.com/michaelforney) for all of their amazing work, but specifically [swc](https://github.com/michaelforney/swc) & [wld](https://github.com/michaelforney/wld) 
+- [Michael Forney](https://github.com/michaelforney) for all of their amazing work, but specifically [swc](https://github.com/michaelforney/swc) & [wld](https://github.com/michaelforney/wld)
 
 ## License
 neuwm is licensed with [unlicense](https://unlicense.org/), effectively putting it in the public domain. You are free to do whatever you please with this code.
