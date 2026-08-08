@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <wayland-server.h>
 #include <swc.h>
 #include <neuipc/neuipc.h>
@@ -8,6 +9,7 @@
 #include "neuwm.h"
 #include "lua-config.h"
 #include "types.h"
+#include "nein_cursor.h"
 
 #define IPC_SOCK "/tmp/neuwm.sock"
 
@@ -108,6 +110,38 @@ q_get_focused(char **args, void *userdata)
 	return s;
 }
 
+static swc_ipc_status
+c_set_cursor(char **args, void *userdata)
+{
+	(void)userdata;
+	swc_ipc_status s = { .ok = true };
+
+	if (!args[1]) {
+		s.ok = false;
+		snprintf(s.msg, sizeof(s.msg), "usage: set_cursor <cross|default>");
+		return s;
+	}
+
+	uint32_t cursor;
+	if (strcmp(args[1], "cross") == 0) {
+		cursor = NEIN_CURSOR_CROSSCURSOR;
+	} else if (strcmp(args[1], "default") == 0) {
+		cursor = NEIN_CURSOR_WHITEARROW;
+	} else {
+		s.ok = false;
+		snprintf(s.msg, sizeof(s.msg), "unknown cursor: %s", args[1]);
+		return s;
+	}
+
+	const struct nein_cursor_meta *meta = &nein_cursor_metadata[cursor];
+	swc_set_cursor_image(SWC_CURSOR_DEFAULT,
+		&nein_cursor_data[meta->offset],
+		meta->width, meta->height,
+		meta->hotspot_x, meta->hotspot_y);
+
+	return s;
+}
+
 static int
 ipc_callback(int fd, uint32_t mask, void *data)
 {
@@ -127,6 +161,7 @@ ipc_init(void)
 	swc_ipc_register("get_mode",       q_get_mode,       NULL);
 	swc_ipc_register("get_cursor",     q_get_cursor,     NULL);
 	swc_ipc_register("get_focused",   q_get_focused,    NULL);
+	swc_ipc_register("set_cursor",    c_set_cursor,     NULL);
 
 	wl_event_loop_add_fd(wm.ev_loop, swc_ipc_get_fd(),
 		WL_EVENT_READABLE, ipc_callback, NULL);
