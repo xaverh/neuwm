@@ -16,6 +16,8 @@
 #include "util.h"
 #include "lua-config.h"
 
+extern int32_t swc_repeat_rate, swc_repeat_delay;
+
 /* ------------------------------------------------------------------ globals */
 
 struct config     cfg;
@@ -500,6 +502,14 @@ void load_config(void)
 	get_uint (L, "float_h",                 &cfg.float_h);
 	get_float(L, "zoom_level",              &cfg.zoom_level);
 	get_uint (L, "motion_throttle_hz",      &cfg.motion_throttle_hz);
+
+	lua_getglobal(L, "repeat_rate");
+	if (lua_isnumber(L, -1)) swc_repeat_rate = (int32_t)lua_tonumber(L, -1);
+	lua_pop(L, 1);
+
+	lua_getglobal(L, "repeat_delay");
+	if (lua_isnumber(L, -1)) swc_repeat_delay = (int32_t)lua_tonumber(L, -1);
+	lua_pop(L, 1);
 
 	/* --- termcmd --- */
 	lua_getglobal(L, "termcmd");

@@ -25,6 +25,10 @@ zoom_level = 0.5
 -- Pointer motion throttle (events per second)
 motion_throttle_hz = 85
 
+-- Keyboard repeat rate (Hz) and delay before repeat starts (ms)
+repeat_rate  = 40
+repeat_delay = 300
+
 -- Terminal command; also used by draw-to-spawn mode (mod+d)
 termcmd = { "st-wl" }
 
