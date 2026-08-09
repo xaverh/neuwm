@@ -198,3 +198,27 @@ ipc_emit_mode(void)
 {
 	wl_event_loop_add_idle(wm.ev_loop, _emit_mode_cb, NULL);
 }
+
+static void
+_emit_focused_geom_cb(void *data)
+{
+	(void)data;
+	fprintf(stderr, "[ipc] _emit_focused_geom_cb: sel_client=%p\n", (void *)wm.sel_client);
+	if (!wm.sel_client) {
+		int n = swc_ipc_emit("focused_geom", "focused_geom none");
+		fprintf(stderr, "[ipc] emit(none) delivered to %d subs\n", n);
+		return;
+	}
+	struct swc_rectangle geom;
+	swc_window_get_geometry(wm.sel_client->win, &geom);
+	int n = swc_ipc_emit("focused_geom", "focused_geom %d,%d %ux%u",
+		geom.x, geom.y, geom.width, geom.height);
+	fprintf(stderr, "[ipc] emit(%d,%d %ux%u) delivered to %d subs\n",
+		geom.x, geom.y, geom.width, geom.height, n);
+}
+
+void
+ipc_emit_focused_geom(void)
+{
+	_emit_focused_geom_cb(NULL);
+}

@@ -39,6 +39,8 @@ static void tile(struct screen* s);
 
 static int zoom_tick(void* data);
 static int pan_drag_tick(void* data);
+static int move_tick(void* data);
+static int resize_tick(void* data);
 static int sel_tick(void* data);
 static int next_cascade_slot(void);
 
@@ -146,6 +148,7 @@ static void focus(struct client* c, bool raise)
 
 	swc_window_focus(c ? c->win : NULL);
 	wm.sel_client = c;
+	ipc_emit_focused_geom();
 }
 
 static void on_screen_destroy(void* data)
@@ -409,6 +412,8 @@ static void tile(struct screen* s)
 			geom.height = h;
 
 			swc_window_set_geometry(c->win, &geom);
+			if (c == wm.sel_client)
+				ipc_emit_focused_geom();
 			return;
 		}
 	}
@@ -448,6 +453,8 @@ static void tile(struct screen* s)
 		}
 
 		swc_window_set_geometry(c->win, &geom);
+		if (c == wm.sel_client)
+			ipc_emit_focused_geom();
 		i++;
 	}
 }
@@ -527,9 +534,34 @@ static int pan_drag_tick(void* data)
 			geom.y += dy;
 			swc_window_set_geometry(c->win, &geom);
 		}
+		ipc_emit_focused_geom();
 	}
 
 	wl_event_source_timer_update(wm.pan_timer, 16);
+	return 0;
+}
+
+static int move_tick(void* data)
+{
+	(void)data;
+
+	if (!wm.sel_client) return 0;
+
+	ipc_emit_focused_geom();
+
+	wl_event_source_timer_update(wm.move_timer, 16);
+	return 0;
+}
+
+static int resize_tick(void* data)
+{
+	(void)data;
+
+	if (!wm.sel_client) return 0;
+
+	ipc_emit_focused_geom();
+
+	wl_event_source_timer_update(wm.resize_timer, 16);
 	return 0;
 }
 
@@ -982,8 +1014,13 @@ void mouse_move(void* data, uint32_t time, uint32_t value, uint32_t state)
 				}
 			}
 		}
-		if (wm.sel_client)
+		if (wm.sel_client) {
 			swc_window_begin_move(wm.sel_client->win);
+			if (!wm.move_timer)
+				wm.move_timer = wl_event_loop_add_timer(wm.ev_loop, move_tick, NULL);
+			if (wm.move_timer)
+				wl_event_source_timer_update(wm.move_timer, 16);
+		}
 	} else {
 		if (wm.pan_active) {
 			wm.pan_active = false;
@@ -992,6 +1029,10 @@ void mouse_move(void* data, uint32_t time, uint32_t value, uint32_t state)
 				wm.pan_timer = NULL;
 			}
 			return;
+		}
+		if (wm.move_timer) {
+			wl_event_source_remove(wm.move_timer);
+			wm.move_timer = NULL;
 		}
 		if (wm.sel_client)
 			swc_window_end_move(wm.sel_client->win);
@@ -1021,11 +1062,20 @@ void mouse_resize(void* data, uint32_t time, uint32_t value, uint32_t state)
 			wm.grab.c->win,
 			SWC_WINDOW_EDGE_RIGHT | SWC_WINDOW_EDGE_BOTTOM
 		);
+		if (!wm.resize_timer)
+			wm.resize_timer = wl_event_loop_add_timer(wm.ev_loop, resize_tick, NULL);
+		if (wm.resize_timer)
+			wl_event_source_timer_update(wm.resize_timer, 16);
 	} else {
 		if (!wm.grab.active || !wm.grab.resize || !wm.grab.c)
 			return;
 
 		swc_window_end_resize(wm.grab.c->win);
+
+		if (wm.resize_timer) {
+			wl_event_source_remove(wm.resize_timer);
+			wm.resize_timer = NULL;
+		}
 
 		wm.grab.active = false;
 		wm.grab.c = NULL;
@@ -1051,6 +1101,7 @@ void float_move_x(void* data, uint32_t time, uint32_t value, uint32_t state)
 	swc_window_get_geometry(wm.sel_client->win, &geom);
 	geom.x += a->i;
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	ipc_emit_focused_geom();
 	repeat_start(float_move_x, a->i, repeat_rate_ms);
 }
 
@@ -1073,6 +1124,7 @@ void float_move_y(void* data, uint32_t time, uint32_t value, uint32_t state)
 	swc_window_get_geometry(wm.sel_client->win, &geom);
 	geom.y += a->i;
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	ipc_emit_focused_geom();
 	repeat_start(float_move_y, a->i, repeat_rate_ms);
 }
 
@@ -1103,6 +1155,7 @@ void float_resize_w(void* data, uint32_t time, uint32_t value, uint32_t state)
 	geom.width = (uint32_t)(wm.repeat_anchor_x - geom.x);
 	swc_window_set_geometry(wm.sel_client->win, &geom);
 	wm.repeat_geom = geom;
+	ipc_emit_focused_geom();
 	repeat_start(float_resize_w, a->i, repeat_rate_ms);
 }
 
@@ -1133,6 +1186,7 @@ void float_resize_h(void* data, uint32_t time, uint32_t value, uint32_t state)
 	geom.height = (uint32_t)(wm.repeat_anchor_y - geom.y);
 	swc_window_set_geometry(wm.sel_client->win, &geom);
 	wm.repeat_geom = geom;
+	ipc_emit_focused_geom();
 	repeat_start(float_resize_h, a->i, repeat_rate_ms);
 }
 
@@ -1155,6 +1209,7 @@ void float_resize_w_right(void* data, uint32_t time, uint32_t value, uint32_t st
 	swc_window_get_geometry(wm.sel_client->win, &geom);
 	geom.width = (uint32_t)((int32_t)geom.width + a->i);
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	ipc_emit_focused_geom();
 	repeat_start(float_resize_w_right, a->i, repeat_rate_ms);
 }
 
@@ -1177,6 +1232,7 @@ void float_resize_h_bottom(void* data, uint32_t time, uint32_t value, uint32_t s
 	swc_window_get_geometry(wm.sel_client->win, &geom);
 	geom.height = (uint32_t)((int32_t)geom.height + a->i);
 	swc_window_set_geometry(wm.sel_client->win, &geom);
+	ipc_emit_focused_geom();
 	repeat_start(float_resize_h_bottom, a->i, repeat_rate_ms);
 }
 
@@ -1210,6 +1266,7 @@ void float_scale(void* data, uint32_t time, uint32_t value, uint32_t state)
 	geom.y = wm.repeat_anchor_y - (int32_t)geom.height / 2;
 	swc_window_set_geometry(wm.sel_client->win, &geom);
 	wm.repeat_geom = geom;
+	ipc_emit_focused_geom();
 	repeat_start(float_scale, a->i, repeat_rate_ms);
 }
 

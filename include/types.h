@@ -106,6 +106,8 @@ struct wm {
 	bool            pan_active;
 	int32_t         pan_last_x;
 	int32_t         pan_last_y;
+	struct          wl_event_source* move_timer;
+	struct          wl_event_source* resize_timer;
 	struct          wl_event_source* sel_timer;
 	struct          wl_event_source* repeat_timer;
 	void            (*repeat_fn)(void*, uint32_t, uint32_t, uint32_t);
