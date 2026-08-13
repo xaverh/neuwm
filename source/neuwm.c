@@ -38,6 +38,10 @@ static void set_floating(struct client* c, bool floating, bool raise);
 static void tile(struct screen* s);
 
 static int zoom_tick(void* data);
+static int canvas_pan_tick(void* data);
+static void canvas_pan_to(int32_t x, int32_t y);
+static void focus_pan_if_needed(struct client* c);
+static void focus_pan_idle(void* data);
 static int pan_drag_tick(void* data);
 static int move_tick(void* data);
 static int resize_tick(void* data);
@@ -125,6 +129,8 @@ static void focus(struct client* c, bool raise)
 		if (wm.zoom_timer)
 			wl_event_source_timer_update(wm.zoom_timer, 1);
 	}
+	if (c)
+		wl_event_loop_add_idle(wm.ev_loop, focus_pan_idle, NULL);
 	if (wm.sel_client) {
 		swc_window_set_border(
 			wm.sel_client->win,
@@ -254,6 +260,9 @@ static void setup(void)
 	wm.ws               = 1;
 	wm.zoom_target      = 1.0f;
 	wm.zoom_timer       = NULL;
+	wm.canvas_pan_timer = NULL;
+	wm.pan_target_x     = 0;
+	wm.pan_target_y     = 0;
 	wm.pan_active       = false;
 	wm.pan_last_x       = 0;
 	wm.pan_last_y       = 0;
@@ -504,6 +513,86 @@ void zoom_axis(void* data, uint32_t time, uint32_t axis, int32_t value120)
 		wm.zoom_timer = wl_event_loop_add_timer(wm.ev_loop, zoom_tick, NULL);
 	if (wm.zoom_timer)
 		wl_event_source_timer_update(wm.zoom_timer, 1);
+}
+
+static const int canvas_pan_timerms = 16;
+
+static int canvas_pan_tick(void* data)
+{
+	(void)data;
+	int32_t cx = swc_get_pan_x();
+	int32_t cy = swc_get_pan_y();
+	int32_t dx = wm.pan_target_x - cx;
+	int32_t dy = wm.pan_target_y - cy;
+
+	if (dx > -2 && dx < 2 && dy > -2 && dy < 2) {
+		swc_set_pan(wm.pan_target_x, wm.pan_target_y);
+		if (wm.canvas_pan_timer) {
+			wl_event_source_remove(wm.canvas_pan_timer);
+			wm.canvas_pan_timer = NULL;
+		}
+		return 0;
+	}
+
+	int32_t step_x = dx / 4;
+	int32_t step_y = dy / 4;
+	if (step_x == 0) step_x = dx > 0 ? 1 : -1;
+	if (step_y == 0) step_y = dy > 0 ? 1 : -1;
+
+	swc_set_pan(cx + step_x, cy + step_y);
+	wl_event_source_timer_update(wm.canvas_pan_timer, canvas_pan_timerms);
+	return 0;
+}
+
+static void canvas_pan_to(int32_t x, int32_t y)
+{
+	wm.pan_target_x = x;
+	wm.pan_target_y = y;
+
+	if (!wm.canvas_pan_timer)
+		wm.canvas_pan_timer = wl_event_loop_add_timer(wm.ev_loop, canvas_pan_tick, NULL);
+	if (wm.canvas_pan_timer)
+		wl_event_source_timer_update(wm.canvas_pan_timer, 1);
+}
+
+static void focus_pan_if_needed(struct client* c)
+{
+	struct swc_rectangle geom;
+	struct swc_rectangle* scr_geom;
+	int32_t pan_x, pan_y, target_x, target_y;
+
+	if (!c || !c->scr)
+		return;
+
+	swc_window_get_geometry(c->win, &geom);
+	scr_geom = &c->scr->scr->usable_geometry;
+	pan_x = swc_get_pan_x();
+	pan_y = swc_get_pan_y();
+
+	if (geom.x >= scr_geom->x + pan_x &&
+	    geom.y >= scr_geom->y + pan_y &&
+	    geom.x + (int32_t)geom.width  <= scr_geom->x + pan_x + (int32_t)scr_geom->width &&
+	    geom.y + (int32_t)geom.height <= scr_geom->y + pan_y + (int32_t)scr_geom->height) {
+		if (wm.canvas_pan_timer) {
+			wl_event_source_remove(wm.canvas_pan_timer);
+			wm.canvas_pan_timer = NULL;
+		}
+		return;
+	}
+
+	target_x = geom.x + (int32_t)geom.width / 2 - scr_geom->x - (int32_t)scr_geom->width / 2;
+	target_y = geom.y + (int32_t)geom.height / 2 - scr_geom->y - (int32_t)scr_geom->height / 2;
+	/* clamped to 0: does not support monitors at negative usable_geometry origin */
+	if (target_x < 0) target_x = 0;
+	if (target_y < 0) target_y = 0;
+
+	canvas_pan_to(target_x, target_y);
+}
+
+static void focus_pan_idle(void* data)
+{
+	(void)data;
+	focus_pan_if_needed(wm.sel_client);
 }
 
 static int pan_drag_tick(void* data)

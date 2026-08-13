@@ -102,6 +102,9 @@ struct wm {
 	struct          grab grab;
 	struct          wl_event_source* zoom_timer;
 	float           zoom_target;
+	struct          wl_event_source* canvas_pan_timer;
+	int32_t         pan_target_x;
+	int32_t         pan_target_y;
 	struct          wl_event_source* pan_timer;
 	bool            pan_active;
 	int32_t         pan_last_x;
