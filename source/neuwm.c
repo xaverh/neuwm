@@ -582,9 +582,6 @@ static void focus_pan_if_needed(struct client* c)
 
 	target_x = geom.x + (int32_t)geom.width / 2 - scr_geom->x - (int32_t)scr_geom->width / 2;
 	target_y = geom.y + (int32_t)geom.height / 2 - scr_geom->y - (int32_t)scr_geom->height / 2;
-	/* clamped to 0: does not support monitors at negative usable_geometry origin */
-	if (target_x < 0) target_x = 0;
-	if (target_y < 0) target_y = 0;
 
 	canvas_pan_to(target_x, target_y);
 }
