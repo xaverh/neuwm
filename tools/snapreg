@@ -1,0 +1,18 @@
+#!/bin/sh
+
+name="snip-$(date +%Y%m%d-%H%M%S)"
+out="$HOME/Pictures/snaps/${name}.png"
+
+neuwmctl set_cursor cross
+region=$(chum)
+neuwmctl set_cursor default
+
+x=$(echo "$region" | cut -d',' -f1)
+y=$(echo "$region" | cut -d',' -f2 | cut -d' ' -f1)
+w=$(echo "$region" | cut -d' ' -f2 | cut -d'x' -f1)
+h=$(echo "$region" | cut -d' ' -f2 | cut -d'x' -f2)
+
+swcsnap image "/tmp/${name}.ppm"
+magick "/tmp/${name}.ppm" -crop "${w}x${h}+${x}+${y}" +repage "$out" && rm "/tmp/${name}.ppm"
+
+swiv "$out" &

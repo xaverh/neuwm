@@ -1,5 +1,5 @@
 # neuwm
-Based on [wsxwm](https://git.sr.ht/~uint/wsxwm) and borrowed from [hevel](https://git.sr.ht/~dlm/hevel).
+Originally based on [wsxwm](https://git.sr.ht/~uint/wsxwm) and borrowed heavily from [hevel](https://git.sr.ht/~dlm/hevel).
 
 ## Why
 
@@ -26,18 +26,25 @@ I wanted a compositor that combined the best parts of the projects I love — do
 - Click to focus and reset zoom; hover focus suppressed while zoomed
 - Pan canvas by dragging empty desktop with `mod+left-click`
 - IPC support via [neuipc](https://codeberg.org/binkd/neuipc) — Unix socket at `/tmp/neuwm.sock`, `neuwmctl` CLI for querying and subscribing
+- Alt+tab cycles focus between windows with smooth viewport pan to follow
+- IPC `neuwmctl set_cursor cross|default` for cursor switching (used by `snapreg`)
+- Keyboard repeat rate and delay configurable via `config.lua`
+- Focused window geometry exposed via IPC (`neuwmctl get_focused`, `sub focused_geom`)
 
 ## Known issues
 - Zoom and workspaces are incompatible due to a swc compositor limitation;
   hidden windows from other workspaces become visible when zoomed out.
   Workspace switching resets zoom but the underlying issue remains.
 
-  #### An infinite canvas layout is planned to replace workspaces entirely in future releases
+  #### An infinite canvas layout is planned to replace workspaces entirely in future releases.
+  Alt+tab with viewport panning is an early step toward this — windows can be placed anywhere on the canvas and focused via keyboard.
 
 ## Dependencies
-Install these first:
-- [neuwld](https://git.sr.ht/~shrub900/neuwld) — patched wld rendering library
-- [neuswc](https://git.sr.ht/~shrub900/neuswc) — patched swc compositor
+
+neuwm requires patched forks of neuswc and neuwld. It is hoped these patches will eventually be adopted upstream.
+
+- [~pfr/neuwld](https://git.sr.ht/~pfr/neuwld) — patched neuwld with lazy shadow buffer allocation for correct rendering performance under software DRM
+- [~pfr/neuswc](https://git.sr.ht/~pfr/neuswc) — patched neuswc with `swc_set_pan`, zoom layer exemption, and pointer fixes
 - [neuipc](https://codeberg.org/binkd/neuipc) — lightweight Unix IPC library
 
 Then the standard build dependencies:
@@ -55,12 +62,12 @@ Then the standard build dependencies:
 
 ## Build & Install
 
-### meson
 ```sh
-meson setup build
-ninja -C build
-doas ninja -C build install
+muon setup build   # or: meson setup build
+samu -C build      # or: ninja -C build
+doas samu -C build install   # or: doas ninja -C build install
 ```
+_muon and samu are preferred but meson and ninja are also supported._
 
 ## Launch
 ```sh
@@ -115,33 +122,41 @@ neuwmctl sub mode         # subscribe to mode change events
 | `mod+d` | Draw-to-spawn terminal mode |
 | `mod+click` | Focus window / reset zoom |
 
-## Extras
+## Tools & Extras
+
 ### swcsnap
-Screenshots using neuswc's `swc_snap` protocol. Outputs PPM to stdout.
+Screenshots using neuswc's `swc_snap` protocol:
 ```sh
 swcsnap image screenshot.ppm
 ```
 
-Interactive region selection via `chum`
-```sh
-swcsnap region screenshot.ppm
-```
+Helper scripts are provided in the `tools/` directory:
 
-### swcrecord
-Screen recorder wrapping swcsnap with ffmpeg. Requires ffmpeg.
+- `snapreg` — interactive region screenshot using chum + ImageMagick
+- `snapwin` — screenshot of the currently focused window
+- `snapimg` — full screen screenshot
+- `snaprec` — screen recorder using `swcsnap record` + ffmpeg, outputs MP4
+
+Install them to your PATH:
 ```sh
-swcsnap record output.mp4
+doas install -m755 tools/* /usr/local/bin/
 ```
 
 ## Recommended
-To make neuwm usable, the following programs are highly recomended
-- [hst](https://git.sr.ht/~dlm/hst) — a pre-patched and [freeway](https://git.sr.ht/~shrub900/freeway)-compatible version of [st-wl](https://github.com/ianbeyst/st-wl) with better font rendering using neuwld
-- [neumenu](https://git.sr.ht/~uint/neumenu) — updated [dmenu](https://github.com/michaelforney/dmenu) fork for wayland using [neuwld](https://git.sr.ht/~shrub900/neuwld)
-- [mojito](https://git.sr.ht/~dlm/mojito) — featherweight, lemonbar-compatible bar for neuswc-based compositors
-- [neubar](https://git.sr.ht/~pfr/neubar) — event-driven status bar feeder for mojito; uses neuwm IPC for workspace/mode updates and inotify for package count, replacing polling shell scripts
+
+### Required for tools/
+- [chum](https://git.sr.ht/~dlm/chum) — required for `snapreg` region selection
+- ImageMagick (`magick`) — required for `snapreg` and `snapwin` cropping
+- [swiv](https://git.sr.ht/~pfr/swiv) — opens screenshots after capture
+- ffmpeg — required for `snaprec` screen recording
+
+### Compositor stack
+- [hst](https://git.sr.ht/~dlm/hst) — recommended terminal, pre-patched for neuwld
+- [neumenu](https://git.sr.ht/~uint/neumenu) — dmenu fork for Wayland using neuwld
+- [mojito](https://git.sr.ht/~dlm/mojito) — featherweight lemonbar-compatible bar for neuswc
+- [neubar](https://git.sr.ht/~pfr/neubar) — event-driven status bar feeder for mojito with neuwm IPC support
 - [wawa](https://codeberg.org/sewn/wawa) — minimal layer shell wallpaper setter
-- [chum](https://git.sr.ht/~dlm/chum) — interactive region picker, required for `swcsnap region`
-- [decor](https://codeberg.org/shrub900/decor) — window decoration theme collection for neuswc; includes a `png2swc` conversion script and per-theme width info
+- [decor](https://codeberg.org/shrub900/decor) — window decoration theme collection for neuswc
 
 ## Screenshot
 ![neuwm screenshot](assets/screenshot.png)

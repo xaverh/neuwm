@@ -1,0 +1,23 @@
+#!/bin/sh
+
+pad=${1:-15}
+name="window-$(date +%Y%m%d-%H%M%S)"
+out="$HOME/Pictures/snaps/${name}.png"
+
+geom=$(neuwmctl get_focused) || exit 1
+
+eval $(echo "$geom" | awk -v p="$pad" '{
+    split($1,pos,","); split($2,dim,"x")
+    x=pos[1]-p; y=pos[2]-p
+    w=dim[1]+p*2; h=dim[2]+p*2
+    if(x<0)x=0; if(y<0)y=0
+    printf "X=%d Y=%d W=%d H=%d", x, y, w, h
+}')
+
+swcsnap image "/tmp/${name}.ppm" || exit 1
+magick "/tmp/${name}.ppm" -crop "${W}x${H}+${X}+${Y}" +repage \
+    "$out" && rm "/tmp/${name}.ppm"
+
+pw=$((W * 2 / 3))
+ph=$((H * 2 / 3))
+swiv -g "${pw}x${ph}" "$out" &

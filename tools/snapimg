@@ -1,0 +1,7 @@
+#!/bin/sh
+
+name="screenshot-$(date +%Y%m%d-%H%M%S)"
+out="$HOME/Pictures/snaps/${name}.png"
+
+swcsnap image "/tmp/${name}.ppm"
+magick "/tmp/${name}.ppm" "$out" && rm "/tmp/${name}.ppm" && swiv -g 1280x720 "$out" &

@@ -1,0 +1,24 @@
+#!/bin/sh
+
+trap '' INT
+
+swcsnap record -r 30 -n 3600 -o $HOME/Pictures/snaps/screenrec/capture.raw &
+SNAP_PID=$!
+
+trap "kill $SNAP_PID" INT
+wait $SNAP_PID
+trap - INT
+
+# Flush stdin
+while read -r -t 0 _; do :; done
+
+name="screencast-$(date +%Y%m%d-%H%M%S)"
+
+ffmpeg -f rawvideo \
+  -pixel_format bgr0 \
+  -video_size 1920x1080 \
+  -framerate 45 \
+  -i $HOME/Pictures/snaps/screenrec/capture.raw \
+  -c:v libx264 -crf 18 -preset slow \
+  -pix_fmt yuv420p \
+  "$HOME/Pictures/snaps/screenrec/${name}.mp4" && rm $HOME/Pictures/snaps/screenrec/capture.raw
